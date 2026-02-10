@@ -17,7 +17,7 @@ public class CandidateService {
     private final CandidateRepository candidateRepo;
     private final TestRepository testRepo;
 
-    // 1️⃣ Register candidate → schedule first test
+    //  Register candidate → schedule first test
     public Candidate registerCandidate(Candidate candidate) {
         Candidate saved = candidateRepo.save(candidate);
 
@@ -30,7 +30,7 @@ public class CandidateService {
         return saved;
     }
 
-    // 2️⃣ Candidate submits a test → evaluate automatically
+    //  Candidate submits a test → evaluate automatically
     public Test submitTest(Long candidateId, Long testId, int score) {
         Test test = testRepo.findById(testId)
                 .orElseThrow(() -> new RuntimeException("Test not found with ID " + testId));
@@ -44,19 +44,19 @@ public class CandidateService {
         return testRepo.save(test);
     }
 
-    // 3️⃣ Get all tests for a candidate
+    //  Get all tests for a candidate
     public List<Test> getCandidateTests(Long candidateId) {
         return testRepo.findByCandidateId(candidateId);
     }
 
-    // 4️⃣ Get test status by test ID
+    //  Get test status by test ID
     public TestStatus getTestStatus(Long testId) {
         Test test = testRepo.findById(testId)
                 .orElseThrow(() -> new RuntimeException("Test not found with ID " + testId));
         return test.getTestStatus();
     }
 
-    // 5️⃣ Schedule a new test for candidate
+    //  Schedule a new test for candidate
     public Test scheduleTest(Long candidateId) {
         Candidate candidate = candidateRepo.findById(candidateId)
                 .orElseThrow(() -> new RuntimeException("Candidate not found"));

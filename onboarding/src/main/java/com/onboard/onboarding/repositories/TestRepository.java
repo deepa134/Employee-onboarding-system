@@ -12,6 +12,5 @@ public interface TestRepository extends JpaRepository<Test, Long> {
     // Return all tests for a candidate
     List<Test> findByCandidateId(Long candidateId);
 
-    // Optional: find latest test
-    // Optional<Test> findFirstByCandidateIdOrderByIdDesc(Long candidateId);
+   
 }

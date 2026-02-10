@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "candidates") // or "candidate" if you prefer singular table
+@Table(name = "candidates") 
 public class Candidate {
 
     @Id
