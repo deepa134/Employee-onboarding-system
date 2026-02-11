@@ -20,6 +20,5 @@ public class Candidate {
     private String email;
     private String phone;
 
-    @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL)
-    private List<Application> applications;
+    
 }

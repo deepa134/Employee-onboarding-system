@@ -15,6 +15,7 @@ public class InternshipService {
     private final InternshipRepository internshipRepo;
 
     public Internship postInternship(Internship internship) {
+        internship.setStatus(InternshipStatus.OPEN); 
         return internshipRepo.save(internship);
     }
 

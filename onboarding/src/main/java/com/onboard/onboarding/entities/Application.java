@@ -1,29 +1,32 @@
 package com.onboard.onboarding.entities;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 
-import java.util.List;
+import java.time.LocalDate;
 
 @Entity
+@Table(name = "applications")   // ✅ ADD THIS LINE
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Table(name = "applications")
 public class Application {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private Candidate candidate;
+    private Long internshipId;
 
-    private String internshipTitle;
+    private String candidateName;
+    private String email;
+    private String phone;
+    private String degree;
+    private String college;
+    private String cgpa;
+    private String skills;
 
-    @Enumerated(EnumType.STRING)
-    private ApplicationStatus status = ApplicationStatus.APPLIED;
+    private String resumeFileName;
 
-    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL)
-    private List<Test> tests;
+    private String status;
+
+    private LocalDate testDate;
 }
