@@ -7,21 +7,19 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tests")
-public class Test {
+@Table(name = "internships")
+public class Internship {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private Application application;
+    private String title;
+    private String description;
+    private String ctc;
+    private String location;  
+    private String pdfFileName;
 
     @Enumerated(EnumType.STRING)
-    private TestType testType;    
-
-    @Enumerated(EnumType.STRING)
-    private TestStatus testStatus = TestStatus.SCHEDULED;
-
-    private int score;
+    private InternshipStatus status = InternshipStatus.OPEN;
 }
