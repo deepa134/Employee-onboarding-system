@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -18,6 +19,7 @@ public class ApplicationController {
 
     private final ApplicationService applicationService;
 
+    // ✅ APPLY FOR INTERNSHIP
     @PostMapping(value = "/apply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Application apply(
             @RequestParam Long internshipId,
@@ -32,7 +34,6 @@ public class ApplicationController {
     ) {
 
         try {
-
             String uploadDir = System.getProperty("user.dir") + File.separator + "resumes";
             File directory = new File(uploadDir);
 
@@ -58,7 +59,7 @@ public class ApplicationController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            throw new RuntimeException("Application failed");
         }
     }
 
@@ -66,4 +67,32 @@ public class ApplicationController {
     public List<Application> getAll() {
         return applicationService.getAllApplications();
     }
+
+    
+    @PostMapping("/submit-test")
+    public Application submitTest(
+            @RequestParam Long applicationId,
+            @RequestParam int score
+    ) {
+        return applicationService.submitTest(applicationId, score);
+    }
+
+   
+    @PostMapping("/schedule-interview")
+public Application scheduleInterview(
+        @RequestParam Long applicationId,
+        @RequestParam String level,
+        @RequestParam String date,
+        @RequestParam String time
+) {
+
+    return applicationService.scheduleInterview(
+            applicationId,
+            level,
+            LocalDate.parse(date),   
+            time
+    );
+}
+
+    
 }

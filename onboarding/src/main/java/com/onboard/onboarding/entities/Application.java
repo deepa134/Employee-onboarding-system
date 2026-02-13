@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "applications")   // ✅ ADD THIS LINE
+@Table(name = "applications")
 @Data
 public class Application {
 
@@ -29,4 +29,10 @@ public class Application {
     private String status;
 
     private LocalDate testDate;
+    private Integer score;
+
+    private String interviewStatus;
+    private LocalDate interviewDate;
+    private String interviewTime;
+    private String interviewLevel;
 }
