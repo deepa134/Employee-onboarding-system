@@ -19,7 +19,7 @@ public class ApplicationController {
 
     private final ApplicationService applicationService;
 
-    // ✅ APPLY FOR INTERNSHIP
+    // ✅ APPLY
     @PostMapping(value = "/apply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Application apply(
             @RequestParam Long internshipId,
@@ -34,6 +34,7 @@ public class ApplicationController {
     ) {
 
         try {
+
             String uploadDir = System.getProperty("user.dir") + File.separator + "resumes";
             File directory = new File(uploadDir);
 
@@ -63,12 +64,13 @@ public class ApplicationController {
         }
     }
 
+    // ✅ GET ALL
     @GetMapping
     public List<Application> getAll() {
         return applicationService.getAllApplications();
     }
 
-    
+    // ✅ SUBMIT TEST
     @PostMapping("/submit-test")
     public Application submitTest(
             @RequestParam Long applicationId,
@@ -77,22 +79,20 @@ public class ApplicationController {
         return applicationService.submitTest(applicationId, score);
     }
 
-   
+    // ✅ SCHEDULE INTERVIEW (FIXED)
     @PostMapping("/schedule-interview")
-public Application scheduleInterview(
-        @RequestParam Long applicationId,
-        @RequestParam String level,
-        @RequestParam String date,
-        @RequestParam String time
-) {
+    public Application scheduleInterview(
+            @RequestParam Long applicationId,
+            @RequestParam String level,
+            @RequestParam String date,
+            @RequestParam String time
+    ) {
 
-    return applicationService.scheduleInterview(
-            applicationId,
-            level,
-            LocalDate.parse(date),   
-            time
-    );
-}
-
-    
+        return applicationService.scheduleInterview(
+                applicationId,
+                level,
+                LocalDate.parse(date),   // ✅ STRING → LOCALDATE
+                time
+        );
+    }
 }
