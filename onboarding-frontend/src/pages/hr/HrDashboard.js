@@ -34,31 +34,36 @@ function HrDashboard() {
     setApplications(res.data);
   };
 
- 
+  const handleInputChange = (appId, field, value) => {
+    setScheduleData({
+      ...scheduleData,
+      [appId]: {
+        ...scheduleData[appId],
+        [field]: value
+      }
+    });
+  };
+
+  // ================= PDF UPLOAD =================
 
   const handlePdfUpload = async () => {
 
-    if (!pdfFile) return alert("Please select a PDF");
+    if (!pdfFile) return alert("Select PDF");
 
     const formData = new FormData();
     formData.append("file", pdfFile);
 
-    try {
-      const res = await axios.post(
-        "http://localhost:8080/api/internships/upload-pdf",
-        formData
-      );
+    const res = await axios.post(
+      "http://localhost:8080/api/internships/upload-pdf",
+      formData
+    );
 
-      setUploadedFileName(res.data);
-      setPdfUploaded(true);
-      alert("PDF uploaded successfully!");
-
-    } catch {
-      alert("PDF upload failed");
-    }
+    setUploadedFileName(res.data);
+    setPdfUploaded(true);
+    alert("PDF uploaded");
   };
 
-  
+  // ================= POST INTERNSHIP =================
 
   const handlePost = async () => {
 
@@ -71,201 +76,199 @@ function HrDashboard() {
     formData.append("description", description);
     formData.append("pdfFileName", uploadedFileName);
 
-    try {
-      const res = await axios.post(
-        "http://localhost:8080/api/internships/post",
-        formData
-      );
+    await axios.post(
+      "http://localhost:8080/api/internships/post",
+      formData
+    );
 
-      setInternships([...internships, res.data]);
+    alert("Internship posted");
 
-      setTitle("");
-      setLocation("");
-      setCtc("");
-      setDescription("");
+    setTitle("");
+    setLocation("");
+    setCtc("");
+    setDescription("");
+    setPdfUploaded(false);
+    setPdfFile(null);
+    fileInputRef.current.value = "";
 
-      setPdfUploaded(false);
-      setUploadedFileName("");
-      setPdfFile(null);
-      fileInputRef.current.value = "";
-
-      alert("Internship posted successfully!");
-
-    } catch {
-      alert("Posting failed");
-    }
+    fetchInternships();
   };
-
-  
 
   const handleDelete = async (id) => {
     await axios.delete(`http://localhost:8080/api/internships/${id}`);
-    setInternships(internships.filter((i) => i.id !== id));
+    fetchInternships();
   };
 
- 
+  // ================= SCHEDULE INTERVIEW =================
 
-  const handleInputChange = (appId, field, value) => {
-
-    setScheduleData({
-      ...scheduleData,
-      [appId]: {
-        ...scheduleData[appId],
-        [field]: value
-      }
-    });
-  };
-
-  
-
-  const scheduleInterview = async (appId) => {
+  const scheduleInterview = async (appId, level) => {
 
     const data = scheduleData[appId];
 
-    if (!data?.date || !data?.time) {
-      return alert("Select date & time");
+    if (!data?.date || !data?.time || !data?.mode || !data?.interviewerId) {
+      return alert("Fill all fields");
     }
 
-    try {
-      await axios.post(
-        "http://localhost:8080/api/applications/schedule-interview",
-        null,
-        {
-          params: {
-            applicationId: appId,
-            level: "L1",
-            date: data.date,
-            time: data.time
-          }
+    await axios.post(
+      "http://localhost:8080/api/applications/schedule-interview",
+      null,
+      {
+        params: {
+          applicationId: appId,
+          level,
+          date: data.date,
+          time: data.time?.slice(0, 5),
+          mode: data.mode,
+          interviewerId: data.interviewerId
         }
-      );
+      }
+    );
 
-      alert("Interview Scheduled ");
-      fetchApplications();
-
-    } catch (err) {
-      console.error(err);
-      alert("Scheduling failed");
-    }
+    alert(`${level} Scheduled`);
+    fetchApplications();
   };
 
   return (
-    <div style={{ padding: "30px", fontFamily: "Arial" }}>
+    <div>
 
       <h1>HR Dashboard</h1>
 
-     
+      {/* ================= POST INTERNSHIP ================= */}
 
-      <div style={box}>
+      <h2>Post New Internship</h2>
 
-        <h2>Post New Internship</h2>
+      <input placeholder="Title" value={title}
+        onChange={(e) => setTitle(e.target.value)} />
 
-        <input placeholder="Internship Title" value={title}
-          onChange={(e) => setTitle(e.target.value)} style={input}/>
+      <input placeholder="Location" value={location}
+        onChange={(e) => setLocation(e.target.value)} />
 
-        <input placeholder="Location" value={location}
-          onChange={(e) => setLocation(e.target.value)} style={input}/>
+      <input placeholder="CTC" value={ctc}
+        onChange={(e) => setCtc(e.target.value)} />
 
-        <input placeholder="CTC" value={ctc}
-          onChange={(e) => setCtc(e.target.value)} style={input}/>
+      <textarea placeholder="Description" value={description}
+        onChange={(e) => setDescription(e.target.value)} />
 
-        <textarea placeholder="Description" value={description}
-          onChange={(e) => setDescription(e.target.value)} style={input}/>
+      <br /><br />
 
-        <hr/>
+      <input type="file" ref={fileInputRef}
+        onChange={(e) => setPdfFile(e.target.files[0])} />
 
-        <h3>Upload Company PDF</h3>
+      <button onClick={handlePdfUpload}>Upload PDF</button>
 
-        <input type="file" accept="application/pdf"
-          ref={fileInputRef}
-          onChange={(e) => setPdfFile(e.target.files[0])} />
+      {pdfUploaded && <button onClick={handlePost}>Post Internship</button>}
 
-        <br/><br/>
+      <hr />
 
-        <button onClick={handlePdfUpload} style={btnGreen}>Upload PDF</button>
-
-        {pdfUploaded && (
-          <button onClick={handlePost} style={btnBlue}>
-            Post Internship
-          </button>
-        )}
-
-      </div>
-
-      
+      {/* ================= POSTED INTERNSHIPS ================= */}
 
       <h2>Posted Internships</h2>
 
       {internships.map((i) => (
-        <div key={i.id} style={card}>
+        <div key={i.id}>
           <h3>{i.title}</h3>
+
           <p><b>Location:</b> {i.location}</p>
           <p><b>CTC:</b> {i.ctc}</p>
           <p><b>Description:</b> {i.description}</p>
 
-          <button onClick={() => handleDelete(i.id)} style={btnRed}>
-            Delete
-          </button>
+          <button onClick={() => handleDelete(i.id)}>Delete</button>
         </div>
       ))}
 
-      
+      <hr />
 
-      <h2>Cleared Candidates (Test Passed)</h2>
+      {/* ================= CANDIDATES ================= */}
+
+      <h2>Candidates</h2>
 
       {applications
-        .filter((app) => app.status === "TEST_PASSED")
+        .filter((app) =>
+          app.status === "TEST_PASSED" || app.status === "L2_PENDING"
+        )
         .map((app) => (
 
-          <div key={app.id} style={card}>
+          <div key={app.id}>
 
             <h3>{app.candidateName}</h3>
-            <p><b>Email:</b> {app.email}</p>
-            <p><b>Phone:</b> {app.phone}</p>
-            <p><b>Score:</b> {app.score}/15</p>
+            <p>{app.email}</p>
 
-            {app.interviewStatus === "L1_SCHEDULED" ? (
-
-              <p style={{ color: "green", fontWeight: "bold" }}>
-                L1 Scheduled on {app.interviewDate} at {app.interviewTime}
+            {app.interviewStatus === "L1_SCHEDULED" && (
+              <p>
+                L1 on {app.interviewDate} at {app.interviewTime}
               </p>
+            )}
 
-            ) : (
+            {app.status === "L2_PENDING" && (
+              <p>L1 Cleared → Schedule L2</p>
+            )}
+
+            {(app.interviewStatus !== "L1_SCHEDULED" ||
+              app.status === "L2_PENDING") && (
 
               <>
-                <input type="date"
+                <input
+                  type="date"
                   onChange={(e) =>
                     handleInputChange(app.id, "date", e.target.value)
-                  } />
+                  }
+                />
 
-                <input type="time"
+                <input
+                  type="time"
+                  step="60"
                   onChange={(e) =>
                     handleInputChange(app.id, "time", e.target.value)
                   }
-                  style={{ marginLeft: 10 }}
                 />
 
-                <button
-                  onClick={() => scheduleInterview(app.id)}
-                  style={btnGreen}
+                <br /><br />
+
+                <select
+                  onChange={(e) =>
+                    handleInputChange(app.id, "mode", e.target.value)
+                  }
                 >
-                  Schedule L1
+                  <option value="">Mode</option>
+                  <option value="ONLINE">Online</option>
+                  <option value="OFFLINE">Offline</option>
+                </select>
+
+                <br /><br />
+
+                <select
+                  onChange={(e) =>
+                    handleInputChange(app.id, "interviewerId", e.target.value)
+                  }
+                >
+                  <option value="">Interviewer</option>
+                  <option value="1">Kavya</option>
+                  <option value="2">Arun</option>
+                  <option value="3">Divya</option>
+                </select>
+
+                <br /><br />
+
+                <button
+                  onClick={() =>
+                    scheduleInterview(
+                      app.id,
+                      app.status === "L2_PENDING" ? "L2" : "L1"
+                    )
+                  }
+                >
+                  Schedule {app.status === "L2_PENDING" ? "L2" : "L1"}
                 </button>
               </>
             )}
 
+            <hr />
+
           </div>
         ))}
+
     </div>
   );
 }
 
 export default HrDashboard;
-
-const box = { background:"#f4f4f4", padding:20, borderRadius:8, marginBottom:30 };
-const card = { border:"1px solid #ccc", padding:20, borderRadius:10, marginBottom:20, background:"#f9f9f9" };
-const input = { width:"100%", padding:8, marginBottom:10 };
-
-const btnGreen = { background:"green", color:"white", border:"none", padding:"8px 15px", borderRadius:5, marginRight:10 };
-const btnBlue = { background:"#007bff", color:"white", border:"none", padding:"8px 15px", borderRadius:5 };
-const btnRed = { background:"red", color:"white", border:"none", padding:"6px 12px", borderRadius:4 };

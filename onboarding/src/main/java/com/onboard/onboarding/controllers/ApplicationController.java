@@ -19,7 +19,8 @@ public class ApplicationController {
 
     private final ApplicationService applicationService;
 
-    // ✅ APPLY
+    // ================= APPLY =================
+
     @PostMapping(value = "/apply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Application apply(
             @RequestParam Long internshipId,
@@ -64,13 +65,22 @@ public class ApplicationController {
         }
     }
 
-    // ✅ GET ALL
+    // ================= GET ALL =================
+
     @GetMapping
     public List<Application> getAll() {
         return applicationService.getAllApplications();
     }
 
-    // ✅ SUBMIT TEST
+    // ================= GET APPLICATIONS FOR INTERVIEWER =================
+
+    @GetMapping("/interviewer/{id}")
+    public List<Application> getByInterviewer(@PathVariable Long id) {
+        return applicationService.getApplicationsByInterviewer(id);
+    }
+
+    // ================= SUBMIT TEST =================
+
     @PostMapping("/submit-test")
     public Application submitTest(
             @RequestParam Long applicationId,
@@ -79,20 +89,46 @@ public class ApplicationController {
         return applicationService.submitTest(applicationId, score);
     }
 
-    // ✅ SCHEDULE INTERVIEW (FIXED)
+    // ================= SCHEDULE INTERVIEW (L1 / L2) =================
+
     @PostMapping("/schedule-interview")
     public Application scheduleInterview(
             @RequestParam Long applicationId,
             @RequestParam String level,
             @RequestParam String date,
-            @RequestParam String time
+            @RequestParam String time,
+            @RequestParam String mode,
+            @RequestParam Long interviewerId
     ) {
 
         return applicationService.scheduleInterview(
                 applicationId,
                 level,
-                LocalDate.parse(date),   // ✅ STRING → LOCALDATE
-                time
+                LocalDate.parse(date),
+                time,
+                mode,
+                interviewerId
         );
     }
+
+    // ================= INTERVIEWER ACCEPT / REJECT =================
+
+    @PostMapping("/interviewer-response")
+    public Application interviewerResponse(
+            @RequestParam Long applicationId,
+            @RequestParam String status
+    ) {
+        return applicationService.updateInterviewerStatus(applicationId, status);
+    }
+
+    // ================= UPDATE INTERVIEW RESULT (L1 / L2) =================
+
+    @PostMapping("/update-interview-result")
+    public Application updateInterviewResult(
+            @RequestParam Long applicationId,
+            @RequestParam String result
+    ) {
+        return applicationService.updateInterviewResult(applicationId, result);
+    }
+
 }

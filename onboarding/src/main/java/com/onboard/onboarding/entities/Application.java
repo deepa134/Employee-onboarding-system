@@ -2,7 +2,6 @@ package com.onboard.onboarding.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.time.LocalDate;
 
 @Entity
@@ -35,4 +34,8 @@ public class Application {
     private LocalDate interviewDate;
     private String interviewTime;
     private String interviewLevel;
+
+    private String mode;
+    private Long interviewerId;
+    private String interviewerStatus;
 }
