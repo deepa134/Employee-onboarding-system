@@ -18,6 +18,8 @@ function CandidateDashboard() {
   const [skills, setSkills] = useState("");
   const [resume, setResume] = useState(null);
 
+  const [signedFiles, setSignedFiles] = useState({});
+
   useEffect(() => {
     fetchInternships();
     fetchApplications();
@@ -88,6 +90,40 @@ function CandidateDashboard() {
     setCgpa("");
     setSkills("");
     setResume(null);
+
+    fetchApplications();
+  };
+
+  const updateOfferStatus = async (id, status) => {
+    await axios.post(
+      "http://localhost:8080/api/applications/offer-status",
+      null,
+      { params: { applicationId: id, status } }
+    );
+    fetchApplications();
+  };
+
+  const handleSignedFileChange = (id, file) => {
+    setSignedFiles({ ...signedFiles, [id]: file });
+  };
+
+  const uploadSignedOffer = async (id) => {
+
+    const file = signedFiles[id];
+    if (!file) return alert("Upload signed offer");
+
+    const formData = new FormData();
+    formData.append("applicationId", id);
+    formData.append("file", file);
+
+    await axios.post(
+      "http://localhost:8080/api/applications/upload-signed-offer",
+      formData
+    );
+
+    alert("Signed offer uploaded");
+
+    setSignedFiles({ ...signedFiles, [id]: null });
 
     fetchApplications();
   };
@@ -171,11 +207,11 @@ function CandidateDashboard() {
 
             {app.interviewStatus === "L1_SCHEDULED" && (
               <div style={interviewBox}>
-                📌 L1 Interview Scheduled <br />
-                📅 {formatDate(app.l1Date)} <br />
-                ⏰ {formatTime(app.l1Time)} <br />
-                💻 {app.l1Mode} <br />
-                👩‍💼 {getInterviewerName(app.l1InterviewerId)}
+                L1 Interview Scheduled <br />
+                {formatDate(app.l1Date)} <br />
+                {formatTime(app.l1Time)} <br />
+                {app.l1Mode} <br />
+                {getInterviewerName(app.l1InterviewerId)}
               </div>
             )}
 
@@ -183,50 +219,67 @@ function CandidateDashboard() {
 
             {app.interviewStatus === "L2_SCHEDULED" && (
               <div style={interviewBox}>
-                📌 L2 Interview Scheduled <br />
-                📅 {formatDate(app.l2Date)} <br />
-                ⏰ {formatTime(app.l2Time)} <br />
-                💻 {app.l2Mode} <br />
-                👩‍💼 {getInterviewerName(app.l2InterviewerId)}
+                L2 Interview Scheduled <br />
+                {formatDate(app.l2Date)} <br />
+                {formatTime(app.l2Time)} <br />
+                {app.l2Mode} <br />
+                {getInterviewerName(app.l2InterviewerId)}
               </div>
             )}
 
             {app.l2Result === "PASSED" && <p style={{ color: "green" }}>You cleared L2</p>}
 
-            
-
             {app.interviewStatus === "HR_SCHEDULED" && !app.hrResult && (
               <div style={interviewBox}>
-                📌 HR Interview Scheduled <br />
-                📅 {formatDate(app.hrDate)} <br />
-                ⏰ {formatTime(app.hrTime)} <br />
-                💻 {app.hrMode}
+                HR Interview Scheduled <br />
+                {formatDate(app.hrDate)} <br />
+                {formatTime(app.hrTime)} <br />
+                {app.hrMode}
               </div>
             )}
 
-          
+            {app.hrResult === "PASSED" &&
+              <p style={{ color: "green", fontWeight: "bold" }}>HR round cleared</p>}
 
-            {app.hrResult === "PASSED" && (
-              <p style={{ color: "green", fontWeight: "bold" }}>
-                HR round cleared
-              </p>
+            {app.hrResult === "FAILED" &&
+              <p style={{ color: "red", fontWeight: "bold" }}>HR round not cleared</p>}
+
+            {app.offerLetterFile && (
+              <div style={interviewBox}>
+
+                <a
+                  href={`http://localhost:8080/offers/${app.offerLetterFile}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Download Offer Letter
+                </a>
+
+                {app.offerStatus === "PENDING" && (
+                  <>
+                    <br /><br />
+                    <button onClick={() => updateOfferStatus(app.id, "ACCEPTED")}>Accept</button>
+                    <button onClick={() => updateOfferStatus(app.id, "REJECTED")}>Reject</button>
+                  </>
+                )}
+
+                {app.offerStatus === "ACCEPTED" && !app.signedOfferLetter && (
+                  <>
+                    <br /><br />
+                    <input
+                      type="file"
+                      onChange={(e) => handleSignedFileChange(app.id, e.target.files[0])}
+                    />
+                    <button onClick={() => uploadSignedOffer(app.id)}>
+                      Upload Signed Offer
+                    </button>
+                  </>
+                )}
+
+                {app.signedOfferLetter &&
+                  <p style={{ color: "green" }}>Offer accepted & signed</p>}
+              </div>
             )}
-
-            {app.hrResult === "FAILED" && (
-              <p style={{ color: "red", fontWeight: "bold" }}>
-                 HR round not cleared
-              </p>
-            )}
-
-            {app.status === "SELECTED" &&
-              <p style={{ color: "green", fontWeight: "bold" }}>
-                Congratulations! You are selected
-              </p>}
-
-            {app.status === "REJECTED" &&
-              <p style={{ color: "red", fontWeight: "bold" }}>
-                Application rejected
-              </p>}
 
           </div>
         );
@@ -238,68 +291,11 @@ function CandidateDashboard() {
 
 export default CandidateDashboard;
 
-
-
-const card = {
-  border: "1px solid #ccc",
-  padding: 20,
-  borderRadius: 10,
-  marginBottom: 20,
-  background: "#f9f9f9"
-};
-
-const applyBtn = {
-  padding: "6px 12px",
-  background: "#007bff",
-  color: "#fff",
-  border: "none",
-  borderRadius: 4
-};
-
-const appliedBtn = {
-  padding: "6px 12px",
-  background: "gray",
-  color: "#fff",
-  border: "none",
-  borderRadius: 4
-};
-
-const submitBtn = {
-  marginTop: 15,
-  padding: "10px 20px",
-  background: "green",
-  color: "#fff",
-  border: "none",
-  borderRadius: 5
-};
-
-const input = {
-  width: "100%",
-  marginBottom: 10,
-  padding: 8
-};
-
-const formBox = {
-  marginTop: 30,
-  padding: 20,
-  background: "#f4f4f4",
-  borderRadius: 8
-};
-
-const testBtn = {
-  padding: "8px 15px",
-  background: "orange",
-  color: "#fff",
-  border: "none",
-  borderRadius: 5,
-  marginTop: 10
-};
-
-const interviewBox = {
-  marginTop: "10px",
-  padding: "12px",
-  background: "#e8f5e9",
-  borderRadius: "8px",
-  color: "green",
-  fontWeight: "bold"
-};
+const card = { border: "1px solid #ccc", padding: 20, borderRadius: 10, marginBottom: 20, background: "#f9f9f9" };
+const applyBtn = { padding: "6px 12px", background: "#007bff", color: "#fff", border: "none", borderRadius: 4 };
+const appliedBtn = { padding: "6px 12px", background: "gray", color: "#fff", border: "none", borderRadius: 4 };
+const submitBtn = { marginTop: 15, padding: "10px 20px", background: "green", color: "#fff", border: "none", borderRadius: 5 };
+const input = { width: "100%", marginBottom: 10, padding: 8 };
+const formBox = { marginTop: 30, padding: 20, background: "#f4f4f4", borderRadius: 8 };
+const testBtn = { padding: "8px 15px", background: "orange", color: "#fff", border: "none", borderRadius: 5, marginTop: 10 };
+const interviewBox = { marginTop: "10px", padding: "12px", background: "#e8f5e9", borderRadius: "8px", color: "green", fontWeight: "bold" };

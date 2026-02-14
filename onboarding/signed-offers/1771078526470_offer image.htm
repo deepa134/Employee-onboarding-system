@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="referrer" content="origin-when-cross-origin">
+    <script>//<![CDATA[
+      var s = false;
+      function l() {
+        setTimeout(f, 10000);
+        if (document.referrer) {
+          try {
+            var pm = /(^|&|\?)px=([^&]*)(&|$)/i;
+            var px = window.location.href.match(pm);
+            var rs = document.referrer;
+            if (px != null) {
+              if (rs.match(pm))
+                rs = rs.replace(pm, "$1px=" + px[2] + "$3");
+              else if (rs.indexOf("?") != -1)
+                rs = rs + "&px=" + px[2];
+              else
+                rs = rs + "?px=" + px[2];
+            }
+            history.replaceState({}, "Bing", rs);
+            window.addEventListener("pageshow", function(e) { if (e.persisted || (typeof window.performance != "undefined" && window.performance.navigation.type === 2)) window.location.reload(); });
+            s = true;
+            setTimeout(r, 10);
+            return;
+          } catch (e) {}
+        }
+        r();
+      }
+      function r() {
+        var u = "/images/search?q=offer+letter+dummy&id=08674E602C57C2ACF78DE5F39804C41F7755EF5A&FORM=IACFIR";
+        if (s)
+          window.location.href = u;
+        else
+          window.location.replace(u);
+      }
+      function f() {
+        document.getElementById("fb").style.display = "block";
+      }
+      //]]>
+    </script>
+  </head>
+  <body onload="l()">
+    <div id="fb" style="display: none">
+      Please <a href="https://www.bing.com/ck/a?!&&p=b3f681f17bd2cc4b9fbf37022dbee1d4712887e28fb48f3cd2ca3aca4ed38942JmltdHM9MTc3MTAyNzIwMA&ptn=3&ver=2&hsh=4&fclid=00ee360d-18d5-6ffa-33de-20fc19d26e00&u=a1L2ltYWdlcy9zZWFyY2g_cT1vZmZlcitsZXR0ZXIrZHVtbXkmaWQ9MDg2NzRFNjAyQzU3QzJBQ0Y3OERFNUYzOTgwNEM0MUY3NzU1RUY1QSZGT1JNPUlBQ0ZJUg&ntb=F">click here</a> if the page does not redirect automatically ...
+    </div>
+  </body>
+</html>

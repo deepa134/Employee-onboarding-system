@@ -13,29 +13,21 @@ import java.util.List;
 public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
-
-   
+    private final EmailService emailService;
 
     public Application apply(Application application) {
-
         application.setStatus("TEST_ACTIVE");
         application.setTestDate(LocalDate.now().plusDays(2));
         application.setInterviewStatus("NOT_SCHEDULED");
         application.setScore(null);
-
         return applicationRepository.save(application);
     }
-
-    
 
     public List<Application> getAllApplications() {
         return applicationRepository.findAll();
     }
 
-    
-
     public List<Application> getApplicationsByInterviewer(Long id) {
-
         return applicationRepository.findAll()
                 .stream()
                 .filter(app ->
@@ -44,8 +36,6 @@ public class ApplicationService {
                 )
                 .toList();
     }
-
-    
 
     public Application submitTest(Long applicationId, int score) {
 
@@ -64,16 +54,11 @@ public class ApplicationService {
 
         application.setScore(score);
 
-        if (score >= 8) {
-            application.setStatus("TEST_PASSED");
-        } else {
-            application.setStatus("TEST_FAILED");
-        }
+        if (score >= 8) application.setStatus("TEST_PASSED");
+        else application.setStatus("TEST_FAILED");
 
         return applicationRepository.save(application);
     }
-
-   
 
     public Application scheduleInterview(Long applicationId,
                                          String level,
@@ -89,7 +74,6 @@ public class ApplicationService {
 
         app.setInterviewLevel(level);
         app.setInterviewStatus(level + "_SCHEDULED");
-
 
         if ("L1".equals(level)) {
             app.setL1Date(date);
@@ -108,12 +92,10 @@ public class ApplicationService {
         }
 
         if ("HR".equals(level)) {
-
             app.setHrDate(date);
             app.setHrTime(time);
             app.setHrMode(mode);
             app.setHrInterviewerName("HR");
-
             app.setInterviewStatus("HR_SCHEDULED");
         }
 
@@ -184,6 +166,61 @@ public class ApplicationService {
             app.setInterviewStatus("HR_FAILED");
             app.setStatus("REJECTED");
         }
+
+        return applicationRepository.save(app);
+    }
+
+    public Application uploadOfferLetter(Long appId, String fileName) {
+
+        Application app = applicationRepository.findById(appId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        app.setOfferLetterFile(fileName);
+        app.setOfferStatus("PENDING");
+
+        applicationRepository.save(app);
+
+        String subject = "Offer Letter Released";
+
+        String body = "Dear " + app.getCandidateName() + ",\n\n" +
+                "Congratulations.\n\n" +
+                "Your offer letter has been released.\n" +
+                "Please login to the portal to download and accept it.\n\n" +
+                "Best Regards,\nHR Team";
+
+        emailService.sendEmail(app.getEmail(), subject, body);
+
+        return app;
+    }
+
+    public Application updateOfferStatus(Long appId, String status) {
+
+        Application app = applicationRepository.findById(appId)
+                .orElseThrow();
+
+        app.setOfferStatus(status);
+
+        String subject = "Offer Letter Response";
+
+        String body = "Candidate " + app.getCandidateName() + " has " + status + " the offer letter.";
+
+        emailService.sendEmail("yourgmail@gmail.com", subject, body);
+
+        return applicationRepository.save(app);
+    }
+
+    public Application uploadSignedOffer(Long appId, String fileName) {
+
+        Application app = applicationRepository.findById(appId)
+                .orElseThrow();
+
+        app.setSignedOfferLetter(fileName);
+
+        String subject = "Signed Offer Letter Uploaded";
+
+        String body = "Candidate " + app.getCandidateName() + " has uploaded the signed offer letter.";
+
+        emailService.sendEmail("yourgmail@gmail.com", subject, body);
 
         return applicationRepository.save(app);
     }

@@ -50,5 +50,9 @@ public class Application {
     private String hrMode;
     private String hrInterviewerName;   
     private String hrResult;
+    private String offerLetterFile;
+    private String offerStatus;
+    private String signedOfferLetter;
+
 
 }

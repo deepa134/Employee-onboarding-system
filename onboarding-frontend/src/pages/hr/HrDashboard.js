@@ -12,14 +12,13 @@ function HrDashboard() {
   const [applications, setApplications] = useState([]);
   const [scheduleData, setScheduleData] = useState({});
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [offerFiles, setOfferFiles] = useState({});
 
   const [pdfFile, setPdfFile] = useState(null);
   const [uploadedFileName, setUploadedFileName] = useState("");
   const [pdfUploaded, setPdfUploaded] = useState(false);
 
   const fileInputRef = useRef(null);
-
- 
 
   const formatDate = (dateString) =>
     dateString &&
@@ -39,8 +38,6 @@ function HrDashboard() {
 
   const getInterviewerName = (id) =>
     id === 1 ? "Kavya" : id === 2 ? "Arun" : id === 3 ? "Divya" : "";
-
-  
 
   useEffect(() => {
     fetchInternships();
@@ -64,10 +61,28 @@ function HrDashboard() {
     setApplications(res.data);
   };
 
-  
+  const handleOfferFileChange = (id, file) => {
+    setOfferFiles({ ...offerFiles, [id]: file });
+  };
+
+  const uploadOfferLetter = async (id) => {
+    const file = offerFiles[id];
+    if (!file) return alert("Select offer letter");
+
+    const formData = new FormData();
+    formData.append("applicationId", id);
+    formData.append("file", file);
+
+    await axios.post(
+      "http://localhost:8080/api/applications/upload-offer-letter",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+
+    fetchApplications();
+  };
 
   const handlePdfUpload = async () => {
-
     if (!pdfFile) return alert("Select PDF");
 
     const formData = new FormData();
@@ -80,13 +95,9 @@ function HrDashboard() {
 
     setUploadedFileName(res.data);
     setPdfUploaded(true);
-    alert("PDF uploaded");
   };
 
-  
-
   const handlePost = async () => {
-
     if (!pdfUploaded) return alert("Upload PDF first");
 
     const formData = new FormData();
@@ -100,8 +111,6 @@ function HrDashboard() {
       "http://localhost:8080/api/internships/post",
       formData
     );
-
-    alert("Internship posted");
 
     setTitle("");
     setLocation("");
@@ -119,8 +128,6 @@ function HrDashboard() {
     fetchInternships();
   };
 
- 
-
   const handleInputChange = (appId, field, value) => {
     setScheduleData({
       ...scheduleData,
@@ -132,7 +139,6 @@ function HrDashboard() {
   };
 
   const scheduleInterview = async (appId, level) => {
-
     const data = scheduleData[appId];
 
     if (!data?.date || !data?.time || !data?.mode) {
@@ -166,14 +172,10 @@ function HrDashboard() {
     fetchApplications();
   };
 
- 
-
   return (
     <div>
 
       <h1>HR Dashboard</h1>
-
-      
 
       <h2>Post New Internship</h2>
 
@@ -199,7 +201,7 @@ function HrDashboard() {
       {internships.map((i) => (
         <div key={i.id}>
           <h3>{i.title}</h3>
-          <p><b>Location:</b> {i.location}</p>
+          <p><b>Place:</b> {i.location}</p>
           <p><b>CTC:</b> {i.ctc}</p>
           <p><b>Description:</b> {i.description}</p>
           <button onClick={() => handleDelete(i.id)}>Delete</button>
@@ -221,15 +223,30 @@ function HrDashboard() {
           <div key={app.id}>
 
             <h3>{app.candidateName}</h3>
-           
 
-            <button onClick={() => setSelectedCandidate(app)}>
-              👁 View Details
-            </button>
+            <button onClick={() => setSelectedCandidate(app)}>View Details</button>
 
             <div style={{ paddingLeft: "15px" }}>
 
-              <p> Test Cleared</p>
+              <p>Test Cleared</p>
+
+              {app.interviewStatus === "L1_SCHEDULED" && app.l1InterviewerStatus === "REQUESTED" &&
+                <p>L1 scheduled – waiting for interviewer response</p>}
+
+              {app.interviewStatus === "L2_SCHEDULED" && app.l2InterviewerStatus === "REQUESTED" &&
+                <p>L2 scheduled – waiting for interviewer response</p>}
+
+              {app.interviewStatus === "HR_SCHEDULED" && !app.hrResult &&
+                <p>HR – {formatDate(app.hrDate)} | {formatTime(app.hrTime)} | {app.hrMode}</p>}
+
+              {app.interviewStatus === "L1_FAILED" &&
+                <p style={{ color: "red", fontWeight: "bold" }}>Candidate failed to clear L1</p>}
+
+              {app.interviewStatus === "L2_FAILED" &&
+                <p style={{ color: "red", fontWeight: "bold" }}>Candidate failed to clear L2</p>}
+
+              {app.interviewStatus === "HR_FAILED" &&
+                <p style={{ color: "red", fontWeight: "bold" }}>Candidate failed in HR round</p>}
 
               {app.l1Result === "PASSED" &&
                 <p>L1 – {formatDate(app.l1Date)} | {getInterviewerName(app.l1InterviewerId)} | {app.l1Mode}</p>}
@@ -242,9 +259,49 @@ function HrDashboard() {
 
               {app.status === "SELECTED" &&
                 <p style={{ color: "green", fontWeight: "bold" }}>
-                   Candidate cleared all rounds successfully
+                  Candidate cleared all rounds successfully
                 </p>}
+
+              {app.offerLetterFile && app.offerStatus === "PENDING" &&
+                <p>Offer letter sent</p>}
+
+              {app.offerStatus === "ACCEPTED" &&
+                <p style={{ color: "green" }}>Offer sent</p>}
+
+              {app.signedOfferLetter && (
+                <div>
+                  <p style={{ color: "green" }}>Signed offer received</p>
+                  <a
+                    href={`http://localhost:8080/signed-offers/${app.signedOfferLetter}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    View Signed Offer Letter
+                  </a>
+                </div>
+              )}
+
             </div>
+
+            {app.interviewStatus === "HR_SCHEDULED" &&
+              app.status !== "SELECTED" &&
+              app.status !== "REJECTED" && (
+                <>
+                  <button onClick={() => updateHrResult(app.id, "HR_PASSED")}>Select</button>
+                  <button onClick={() => updateHrResult(app.id, "HR_FAILED")}>Reject</button>
+                </>
+              )}
+
+            {app.status === "SELECTED" && !app.offerLetterFile && (
+              <>
+                <input type="file"
+                  onChange={(e) => handleOfferFileChange(app.id, e.target.files[0])}
+                />
+                <button onClick={() => uploadOfferLetter(app.id)}>
+                  Upload Offer Letter
+                </button>
+              </>
+            )}
 
             {showSchedule && (
               <>
@@ -273,8 +330,8 @@ function HrDashboard() {
                       app.status === "TEST_PASSED"
                         ? "L1"
                         : app.status === "L2_PENDING"
-                        ? "L2"
-                        : "HR"
+                          ? "L2"
+                          : "HR"
                     )
                   }
                 >
@@ -283,22 +340,11 @@ function HrDashboard() {
               </>
             )}
 
-            {app.interviewStatus === "HR_SCHEDULED" &&
-             app.status !== "SELECTED" &&
-             app.status !== "REJECTED" && (
-              <>
-                <button onClick={() => updateHrResult(app.id, "HR_PASSED")}>✅ Select</button>
-                <button onClick={() => updateHrResult(app.id, "HR_FAILED")}>❌ Reject</button>
-              </>
-            )}
-
             <hr />
 
           </div>
         );
       })}
-
-      
 
       {selectedCandidate && (
         <div style={{
@@ -311,7 +357,6 @@ function HrDashboard() {
           border: "1px solid #ccc",
           borderRadius: "10px"
         }}>
-
           <h3>Candidate Details</h3>
 
           <p><b>Name:</b> {selectedCandidate.candidateName}</p>
@@ -327,7 +372,7 @@ function HrDashboard() {
             target="_blank"
             rel="noreferrer"
           >
-            📄 Download Resume
+            Download Resume
           </a>
 
           <br /><br />

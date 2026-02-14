@@ -19,7 +19,6 @@ public class ApplicationController {
 
     private final ApplicationService applicationService;
 
-
     @PostMapping(value = "/apply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Application apply(
             @RequestParam Long internshipId,
@@ -32,7 +31,6 @@ public class ApplicationController {
             @RequestParam String skills,
             @RequestParam MultipartFile resume
     ) {
-
         try {
 
             String uploadDir = System.getProperty("user.dir") + File.separator + "resumes";
@@ -59,26 +57,19 @@ public class ApplicationController {
             return applicationService.apply(application);
 
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("Application failed");
         }
     }
-
-    
 
     @GetMapping
     public List<Application> getAll() {
         return applicationService.getAllApplications();
     }
 
-    
-
     @GetMapping("/interviewer/{id}")
     public List<Application> getByInterviewer(@PathVariable Long id) {
         return applicationService.getApplicationsByInterviewer(id);
     }
-
-    
 
     @PostMapping("/submit-test")
     public Application submitTest(
@@ -87,8 +78,6 @@ public class ApplicationController {
     ) {
         return applicationService.submitTest(applicationId, score);
     }
-
-   
 
     @PostMapping("/schedule-interview")
     public Application scheduleInterview(
@@ -99,7 +88,6 @@ public class ApplicationController {
             @RequestParam String mode,
             @RequestParam(required = false) Long interviewerId
     ) {
-
         return applicationService.scheduleInterview(
                 applicationId,
                 level,
@@ -134,4 +122,49 @@ public class ApplicationController {
         return applicationService.updateHrResult(applicationId, result);
     }
 
+    @PostMapping(value = "/upload-offer-letter", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Application uploadOfferLetter(
+            @RequestParam Long applicationId,
+            @RequestParam MultipartFile file
+    ) throws Exception {
+
+        String uploadDir = System.getProperty("user.dir") + File.separator + "offers";
+        File directory = new File(uploadDir);
+
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        file.transferTo(new File(uploadDir + File.separator + fileName));
+
+        return applicationService.uploadOfferLetter(applicationId, fileName);
+    }
+
+    @PostMapping("/offer-status")
+    public Application updateOfferStatus(
+            @RequestParam Long applicationId,
+            @RequestParam String status
+    ) {
+        return applicationService.updateOfferStatus(applicationId, status);
+    }
+
+    @PostMapping(value = "/upload-signed-offer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Application uploadSignedOffer(
+            @RequestParam Long applicationId,
+            @RequestParam MultipartFile file
+    ) throws Exception {
+
+        String uploadDir = System.getProperty("user.dir") + File.separator + "signed-offers";
+        File directory = new File(uploadDir);
+
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        file.transferTo(new File(uploadDir + File.separator + fileName));
+
+        return applicationService.uploadSignedOffer(applicationId, fileName);
+    }
 }

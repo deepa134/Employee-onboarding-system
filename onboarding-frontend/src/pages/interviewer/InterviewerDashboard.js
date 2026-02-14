@@ -63,7 +63,6 @@ function InterviewerDashboard() {
 
       {applications.map((app) => {
 
-        
         const isL1 = Number(interviewerId) === app.l1InterviewerId;
         const level = isL1 ? "L1" : "L2";
 
@@ -75,11 +74,9 @@ function InterviewerDashboard() {
         const time = isL1 ? app.l1Time : app.l2Time;
         const mode = isL1 ? app.l1Mode : app.l2Mode;
 
-        const resultDone =
-          app.l1Result === "PASSED" ||
-          app.l1Result === "FAILED" ||
-          app.l2Result === "PASSED" ||
-          app.l2Result === "FAILED";
+        const resultDone = level === "L1"
+          ? app.l1Result === "PASSED" || app.l1Result === "FAILED"
+          : app.l2Result === "PASSED" || app.l2Result === "FAILED";
 
         return (
           <div key={app.id}>
@@ -87,14 +84,11 @@ function InterviewerDashboard() {
             <h3>{app.candidateName}</h3>
             <p>{app.email}</p>
 
-           
             <p><b>Level:</b> {level}</p>
 
             <p><b>Date:</b> {formatDate(date)}</p>
             <p><b>Time:</b> {formatTime(time)}</p>
             <p><b>Mode:</b> {mode}</p>
-
-            
 
             {interviewerStatus === "REQUESTED" && (
               <>
@@ -113,8 +107,6 @@ function InterviewerDashboard() {
                 </button>
               </>
             )}
-
-            {/* PASS / FAIL */}
 
             {interviewerStatus === "ACCEPTED" &&
              app.interviewStatus.includes("SCHEDULED") && (
@@ -147,21 +139,29 @@ function InterviewerDashboard() {
               </>
             )}
 
-            
-
-            {(app.l1Result === "PASSED" && level === "L1") ||
-             (app.l2Result === "PASSED" && level === "L2") ? (
+            {level === "L1" && app.l1Result === "PASSED" && (
               <p style={{ color: "green", fontWeight: "bold" }}>
-                ✅ Candidate cleared this round
+                Candidate cleared this round
               </p>
-            ) : null}
+            )}
 
-            {(app.l1Result === "FAILED" && level === "L1") ||
-             (app.l2Result === "FAILED" && level === "L2") ? (
-              <p style={{ color: "red", fontWeight: "bold" }}>
-                ❌ Candidate failed this round
+            {level === "L2" && app.l2Result === "PASSED" && (
+              <p style={{ color: "green", fontWeight: "bold" }}>
+                Candidate cleared this round
               </p>
-            ) : null}
+            )}
+
+            {level === "L1" && app.l1Result === "FAILED" && (
+              <p style={{ color: "red", fontWeight: "bold" }}>
+                Candidate failed this round
+              </p>
+            )}
+
+            {level === "L2" && app.l2Result === "FAILED" && (
+              <p style={{ color: "red", fontWeight: "bold" }}>
+                Candidate failed this round
+              </p>
+            )}
 
             <hr />
 
