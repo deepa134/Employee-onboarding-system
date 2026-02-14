@@ -14,6 +14,8 @@ public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
 
+   
+
     public Application apply(Application application) {
 
         application.setStatus("TEST_ACTIVE");
@@ -24,13 +26,26 @@ public class ApplicationService {
         return applicationRepository.save(application);
     }
 
+    
+
     public List<Application> getAllApplications() {
         return applicationRepository.findAll();
     }
 
+    
+
     public List<Application> getApplicationsByInterviewer(Long id) {
-        return applicationRepository.findByInterviewerId(id);
+
+        return applicationRepository.findAll()
+                .stream()
+                .filter(app ->
+                        (app.getL1InterviewerId() != null && app.getL1InterviewerId().equals(id)) ||
+                        (app.getL2InterviewerId() != null && app.getL2InterviewerId().equals(id))
+                )
+                .toList();
     }
+
+    
 
     public Application submitTest(Long applicationId, int score) {
 
@@ -38,7 +53,7 @@ public class ApplicationService {
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
         if ("TEST_PASSED".equals(application.getStatus()) ||
-            "TEST_FAILED".equals(application.getStatus())) {
+                "TEST_FAILED".equals(application.getStatus())) {
             throw new RuntimeException("Test already submitted");
         }
 
@@ -58,6 +73,8 @@ public class ApplicationService {
         return applicationRepository.save(application);
     }
 
+   
+
     public Application scheduleInterview(Long applicationId,
                                          String level,
                                          LocalDate date,
@@ -68,16 +85,37 @@ public class ApplicationService {
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
+        time = time.substring(0, 5);
+
         app.setInterviewLevel(level);
-        app.setInterviewDate(date);
-
-        // ⭐ TIME SAFETY FIX
-        app.setInterviewTime(time.substring(0, 5));
-
         app.setInterviewStatus(level + "_SCHEDULED");
-        app.setMode(mode);
-        app.setInterviewerId(interviewerId);
-        app.setInterviewerStatus("REQUESTED");
+
+
+        if ("L1".equals(level)) {
+            app.setL1Date(date);
+            app.setL1Time(time);
+            app.setL1Mode(mode);
+            app.setL1InterviewerId(interviewerId);
+            app.setL1InterviewerStatus("REQUESTED");
+        }
+
+        if ("L2".equals(level)) {
+            app.setL2Date(date);
+            app.setL2Time(time);
+            app.setL2Mode(mode);
+            app.setL2InterviewerId(interviewerId);
+            app.setL2InterviewerStatus("REQUESTED");
+        }
+
+        if ("HR".equals(level)) {
+
+            app.setHrDate(date);
+            app.setHrTime(time);
+            app.setHrMode(mode);
+            app.setHrInterviewerName("HR");
+
+            app.setInterviewStatus("HR_SCHEDULED");
+        }
 
         return applicationRepository.save(app);
     }
@@ -87,7 +125,14 @@ public class ApplicationService {
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
-        app.setInterviewerStatus(status);
+        if ("L1".equals(app.getInterviewLevel())) {
+            app.setL1InterviewerStatus(status);
+        }
+
+        if ("L2".equals(app.getInterviewLevel())) {
+            app.setL2InterviewerStatus(status);
+        }
+
         return applicationRepository.save(app);
     }
 
@@ -97,22 +142,46 @@ public class ApplicationService {
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
         if ("L1_PASSED".equals(result)) {
+            app.setL1Result("PASSED");
             app.setInterviewStatus("L1_PASSED");
             app.setStatus("L2_PENDING");
         }
 
         if ("L1_FAILED".equals(result)) {
+            app.setL1Result("FAILED");
             app.setInterviewStatus("L1_FAILED");
             app.setStatus("REJECTED");
         }
 
         if ("L2_PASSED".equals(result)) {
+            app.setL2Result("PASSED");
             app.setInterviewStatus("L2_PASSED");
-            app.setStatus("SELECTED");
+            app.setStatus("HR_PENDING");
         }
 
         if ("L2_FAILED".equals(result)) {
+            app.setL2Result("FAILED");
             app.setInterviewStatus("L2_FAILED");
+            app.setStatus("REJECTED");
+        }
+
+        return applicationRepository.save(app);
+    }
+
+    public Application updateHrResult(Long applicationId, String result) {
+
+        Application app = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        if ("HR_PASSED".equals(result)) {
+            app.setHrResult("PASSED");
+            app.setInterviewStatus("HR_PASSED");
+            app.setStatus("SELECTED");
+        }
+
+        if ("HR_FAILED".equals(result)) {
+            app.setHrResult("FAILED");
+            app.setInterviewStatus("HR_FAILED");
             app.setStatus("REJECTED");
         }
 

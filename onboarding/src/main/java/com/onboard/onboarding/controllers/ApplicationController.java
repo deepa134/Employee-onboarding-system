@@ -19,7 +19,6 @@ public class ApplicationController {
 
     private final ApplicationService applicationService;
 
-    // ================= APPLY =================
 
     @PostMapping(value = "/apply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Application apply(
@@ -65,21 +64,21 @@ public class ApplicationController {
         }
     }
 
-    // ================= GET ALL =================
+    
 
     @GetMapping
     public List<Application> getAll() {
         return applicationService.getAllApplications();
     }
 
-    // ================= GET APPLICATIONS FOR INTERVIEWER =================
+    
 
     @GetMapping("/interviewer/{id}")
     public List<Application> getByInterviewer(@PathVariable Long id) {
         return applicationService.getApplicationsByInterviewer(id);
     }
 
-    // ================= SUBMIT TEST =================
+    
 
     @PostMapping("/submit-test")
     public Application submitTest(
@@ -89,7 +88,7 @@ public class ApplicationController {
         return applicationService.submitTest(applicationId, score);
     }
 
-    // ================= SCHEDULE INTERVIEW (L1 / L2) =================
+   
 
     @PostMapping("/schedule-interview")
     public Application scheduleInterview(
@@ -98,7 +97,7 @@ public class ApplicationController {
             @RequestParam String date,
             @RequestParam String time,
             @RequestParam String mode,
-            @RequestParam Long interviewerId
+            @RequestParam(required = false) Long interviewerId
     ) {
 
         return applicationService.scheduleInterview(
@@ -111,8 +110,6 @@ public class ApplicationController {
         );
     }
 
-    // ================= INTERVIEWER ACCEPT / REJECT =================
-
     @PostMapping("/interviewer-response")
     public Application interviewerResponse(
             @RequestParam Long applicationId,
@@ -121,14 +118,20 @@ public class ApplicationController {
         return applicationService.updateInterviewerStatus(applicationId, status);
     }
 
-    // ================= UPDATE INTERVIEW RESULT (L1 / L2) =================
-
     @PostMapping("/update-interview-result")
     public Application updateInterviewResult(
             @RequestParam Long applicationId,
             @RequestParam String result
     ) {
         return applicationService.updateInterviewResult(applicationId, result);
+    }
+
+    @PostMapping("/hr-result")
+    public Application updateHrResult(
+            @RequestParam Long applicationId,
+            @RequestParam String result
+    ) {
+        return applicationService.updateHrResult(applicationId, result);
     }
 
 }

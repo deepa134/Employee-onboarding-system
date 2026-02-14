@@ -21,7 +21,6 @@ function CandidateDashboard() {
   useEffect(() => {
     fetchInternships();
     fetchApplications();
-
     const interval = setInterval(fetchApplications, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -36,16 +35,35 @@ function CandidateDashboard() {
     setApplications(res.data);
   };
 
-  const hasApplied = (internshipId) => {
-    return applications.some((app) => app.internshipId === internshipId);
+  const formatDate = (dateString) =>
+    dateString &&
+    new Date(dateString).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+
+  const formatTime = (time) => {
+    if (!time) return "";
+    const [h, m] = time.split(":");
+    const d = new Date();
+    d.setHours(h, m);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
+
+  const getInterviewerName = (id) => {
+    if (id === 1) return "Kavya";
+    if (id === 2) return "Arun";
+    if (id === 3) return "Divya";
+    return "";
+  };
+
+  const hasApplied = (internshipId) =>
+    applications.some((app) => app.internshipId === internshipId);
 
   const handleApply = async () => {
 
-    if (!resume) {
-      alert("Please upload resume");
-      return;
-    }
+    if (!resume) return alert("Please upload resume");
 
     const formData = new FormData();
     formData.append("internshipId", selectedInternship.id);
@@ -58,15 +76,20 @@ function CandidateDashboard() {
     formData.append("skills", skills);
     formData.append("resume", resume);
 
-    try {
-      await axios.post("http://localhost:8080/api/applications/apply", formData);
-      alert("Application submitted!");
-      setSelectedInternship(null);
-      fetchApplications();
-    } catch (err) {
-      console.error(err);
-      alert("Application failed");
-    }
+    await axios.post("http://localhost:8080/api/applications/apply", formData);
+
+    alert("Application submitted!");
+
+    setSelectedInternship(null);
+    setCandidateName("");
+    setPhone("");
+    setDegree("");
+    setCollege("");
+    setCgpa("");
+    setSkills("");
+    setResume(null);
+
+    fetchApplications();
   };
 
   return (
@@ -91,21 +114,32 @@ function CandidateDashboard() {
 
       {selectedInternship && (
         <div style={formBox}>
-
           <h2>Apply for {selectedInternship.title}</h2>
 
-          <input placeholder="Full Name" onChange={(e) => setCandidateName(e.target.value)} style={input}/>
-          <input placeholder="Phone" onChange={(e) => setPhone(e.target.value)} style={input}/>
-          <input placeholder="Degree" onChange={(e) => setDegree(e.target.value)} style={input}/>
-          <input placeholder="College" onChange={(e) => setCollege(e.target.value)} style={input}/>
-          <input placeholder="CGPA" onChange={(e) => setCgpa(e.target.value)} style={input}/>
-          <input placeholder="Skills" onChange={(e) => setSkills(e.target.value)} style={input}/>
-          <input type="file" accept="application/pdf" onChange={(e) => setResume(e.target.files[0])}/>
+          <input placeholder="Full Name" value={candidateName}
+            onChange={(e) => setCandidateName(e.target.value)} style={input} />
+
+          <input placeholder="Phone" value={phone}
+            onChange={(e) => setPhone(e.target.value)} style={input} />
+
+          <input placeholder="Degree" value={degree}
+            onChange={(e) => setDegree(e.target.value)} style={input} />
+
+          <input placeholder="College" value={college}
+            onChange={(e) => setCollege(e.target.value)} style={input} />
+
+          <input placeholder="CGPA" value={cgpa}
+            onChange={(e) => setCgpa(e.target.value)} style={input} />
+
+          <input placeholder="Skills" value={skills}
+            onChange={(e) => setSkills(e.target.value)} style={input} />
+
+          <input type="file" accept="application/pdf"
+            onChange={(e) => setResume(e.target.files[0])} />
 
           <button onClick={handleApply} style={submitBtn}>
             Submit Application
           </button>
-
         </div>
       )}
 
@@ -120,17 +154,9 @@ function CandidateDashboard() {
 
             <h3>{internship?.title}</h3>
 
-            <p><b>Status:</b> {app.status}</p>
-
-            {app.score !== null && (
-              <p><b>Score:</b> {app.score} / 15</p>
-            )}
-
-            
             {app.status === "TEST_ACTIVE" && (
               <>
-                <p><b>Test Active Until:</b> {app.testDate}</p>
-
+                <p>Test active till {formatDate(app.testDate)}</p>
                 <button
                   onClick={() => navigate(`/candidate/test/${app.id}`)}
                   style={testBtn}
@@ -140,37 +166,67 @@ function CandidateDashboard() {
               </>
             )}
 
-           
-            {app.status === "TEST_PASSED" && (
-              <>
-                <p style={{ color: "green", fontWeight: "bold" }}>
-                   You cleared the online test
-                </p>
+            {app.status === "TEST_PASSED" &&
+              <p style={{ color: "green" }}>You cleared the online test</p>}
 
-                {!app.interviewStatus && (
-                  <p style={{ color: "blue" }}>
-                    Waiting for HR to schedule interview
-                  </p>
-                )}
-              </>
+            {app.interviewStatus === "L1_SCHEDULED" && (
+              <div style={interviewBox}>
+                📌 L1 Interview Scheduled <br />
+                📅 {formatDate(app.l1Date)} <br />
+                ⏰ {formatTime(app.l1Time)} <br />
+                💻 {app.l1Mode} <br />
+                👩‍💼 {getInterviewerName(app.l1InterviewerId)}
+              </div>
             )}
 
+            {app.l1Result === "PASSED" && <p style={{ color: "green" }}>You cleared L1</p>}
+
+            {app.interviewStatus === "L2_SCHEDULED" && (
+              <div style={interviewBox}>
+                📌 L2 Interview Scheduled <br />
+                📅 {formatDate(app.l2Date)} <br />
+                ⏰ {formatTime(app.l2Time)} <br />
+                💻 {app.l2Mode} <br />
+                👩‍💼 {getInterviewerName(app.l2InterviewerId)}
+              </div>
+            )}
+
+            {app.l2Result === "PASSED" && <p style={{ color: "green" }}>You cleared L2</p>}
+
             
-            {app.status === "TEST_FAILED" && (
-              <p style={{ color: "red", fontWeight: "bold" }}>
-                ❌ You did not clear the online test
+
+            {app.interviewStatus === "HR_SCHEDULED" && !app.hrResult && (
+              <div style={interviewBox}>
+                📌 HR Interview Scheduled <br />
+                📅 {formatDate(app.hrDate)} <br />
+                ⏰ {formatTime(app.hrTime)} <br />
+                💻 {app.hrMode}
+              </div>
+            )}
+
+          
+
+            {app.hrResult === "PASSED" && (
+              <p style={{ color: "green", fontWeight: "bold" }}>
+                HR round cleared
               </p>
             )}
 
-            
-            {app.status === "TEST_PASSED" &&
-             app.interviewStatus === "L1_SCHEDULED" && (
-              <div style={interviewBox}>
-                 L1 Interview Scheduled <br />
-                📅 Date: {app.interviewDate} <br />
-                ⏰ Time: {app.interviewTime}
-              </div>
+            {app.hrResult === "FAILED" && (
+              <p style={{ color: "red", fontWeight: "bold" }}>
+                 HR round not cleared
+              </p>
             )}
+
+            {app.status === "SELECTED" &&
+              <p style={{ color: "green", fontWeight: "bold" }}>
+                Congratulations! You are selected
+              </p>}
+
+            {app.status === "REJECTED" &&
+              <p style={{ color: "red", fontWeight: "bold" }}>
+                Application rejected
+              </p>}
 
           </div>
         );
@@ -182,7 +238,7 @@ function CandidateDashboard() {
 
 export default CandidateDashboard;
 
-/* ================= STYLES ================= */
+
 
 const card = {
   border: "1px solid #ccc",

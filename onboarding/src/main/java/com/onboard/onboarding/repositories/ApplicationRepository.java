@@ -7,10 +7,7 @@ import java.util.List;
 
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
 
-    // 🔹 For Interviewer Dashboard → show only assigned interviews
-    List<Application> findByInterviewerId(Long interviewerId);
-
-    // 🔹 Optional (useful later) → filter by status also
-    List<Application> findByInterviewerIdAndStatus(Long interviewerId, String status);
+    List<Application> findByL1InterviewerId(Long interviewerId);
+    List<Application> findByL2InterviewerId(Long interviewerId);
 
 }

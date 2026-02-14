@@ -20,7 +20,6 @@ public class CandidateController {
         return candidateService.apply(application);
     }
 
-    
     @PostMapping("/tests/{testId}/submit")
     public Test submitOnlineTest(
             @PathVariable Long testId,
@@ -28,7 +27,6 @@ public class CandidateController {
         return candidateService.submitOnlineTest(testId, request.getScore());
     }
 
-   
     @Data
     static class ScoreRequest {
         private int score;

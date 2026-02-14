@@ -45,7 +45,6 @@ public class InternshipController {
         }
     }
 
-   
     @PostMapping("/post")
     public Internship postInternship(
             @RequestParam("title") String title,
@@ -64,19 +63,16 @@ public class InternshipController {
         return internshipService.postInternship(internship);
     }
 
-   
     @GetMapping
     public List<Internship> getAllInternships() {
         return internshipService.getAllInternships();
     }
 
-  
     @PutMapping("/{id}/close")
     public Internship closeInternship(@PathVariable Long id) {
         return internshipService.closeInternship(id);
     }
 
-   
     @DeleteMapping("/{id}")
     public String deleteInternship(@PathVariable Long id) {
         internshipService.deleteInternship(id);

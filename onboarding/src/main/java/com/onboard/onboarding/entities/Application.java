@@ -31,11 +31,24 @@ public class Application {
     private Integer score;
 
     private String interviewStatus;
-    private LocalDate interviewDate;
-    private String interviewTime;
     private String interviewLevel;
 
-    private String mode;
-    private Long interviewerId;
-    private String interviewerStatus;
+    private LocalDate l1Date;
+    private String l1Time;
+    private String l1Mode;
+    private Long l1InterviewerId;
+    private String l1InterviewerStatus;
+    private String l1Result;
+    private LocalDate l2Date;
+    private String l2Time;
+    private String l2Mode;
+    private Long l2InterviewerId;
+    private String l2InterviewerStatus;
+    private String l2Result;
+    private LocalDate hrDate;
+    private String hrTime;
+    private String hrMode;
+    private String hrInterviewerName;   
+    private String hrResult;
+
 }

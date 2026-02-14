@@ -2,13 +2,9 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
-
 function InterviewerDashboard() {
 
-  // ✅ TEMP → later from login
-  
   const { id: interviewerId } = useParams();
-
   const [applications, setApplications] = useState([]);
 
   useEffect(() => {
@@ -18,45 +14,44 @@ function InterviewerDashboard() {
   }, []);
 
   const fetchApplications = async () => {
-    try {
-      const res = await axios.get(
-        `http://localhost:8080/api/applications/interviewer/${interviewerId}`
-      );
-      setApplications(res.data);
-    } catch (err) {
-      console.error(err);
-    }
+    const res = await axios.get(
+      `http://localhost:8080/api/applications/interviewer/${interviewerId}`
+    );
+    setApplications(res.data);
   };
 
   const respondToRequest = async (applicationId, status) => {
-    try {
-      await axios.post(
-        "http://localhost:8080/api/applications/interviewer-response",
-        null,
-        { params: { applicationId, status } }
-      );
-
-      fetchApplications();
-
-    } catch (err) {
-      console.error(err);
-    }
+    await axios.post(
+      "http://localhost:8080/api/applications/interviewer-response",
+      null,
+      { params: { applicationId, status } }
+    );
+    fetchApplications();
   };
 
   const updateResult = async (applicationId, result) => {
-    try {
+    await axios.post(
+      "http://localhost:8080/api/applications/update-interview-result",
+      null,
+      { params: { applicationId, result } }
+    );
+    fetchApplications();
+  };
 
-      await axios.post(
-        "http://localhost:8080/api/applications/update-interview-result",
-        null,
-        { params: { applicationId, result } }
-      );
+  const formatDate = (dateString) =>
+    dateString &&
+    new Date(dateString).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
 
-      fetchApplications();
-
-    } catch (err) {
-      console.error(err);
-    }
+  const formatTime = (time) => {
+    if (!time) return "";
+    const [h, m] = time.split(":");
+    const d = new Date();
+    d.setHours(h, m);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -68,27 +63,40 @@ function InterviewerDashboard() {
 
       {applications.map((app) => {
 
-        const isResultDone =
-          app.interviewStatus === "L1_PASSED" ||
-          app.interviewStatus === "L1_FAILED" ||
-          app.interviewStatus === "L2_PASSED" ||
-          app.interviewStatus === "L2_FAILED";
+        
+        const isL1 = Number(interviewerId) === app.l1InterviewerId;
+        const level = isL1 ? "L1" : "L2";
+
+        const interviewerStatus = isL1
+          ? app.l1InterviewerStatus
+          : app.l2InterviewerStatus;
+
+        const date = isL1 ? app.l1Date : app.l2Date;
+        const time = isL1 ? app.l1Time : app.l2Time;
+        const mode = isL1 ? app.l1Mode : app.l2Mode;
+
+        const resultDone =
+          app.l1Result === "PASSED" ||
+          app.l1Result === "FAILED" ||
+          app.l2Result === "PASSED" ||
+          app.l2Result === "FAILED";
 
         return (
-
           <div key={app.id}>
 
             <h3>{app.candidateName}</h3>
+            <p>{app.email}</p>
 
-            <p>Email: {app.email}</p>
-            <p>Date: {app.interviewDate}</p>
-            <p>Time: {app.interviewTime}</p>
-            <p>Mode: {app.mode}</p>
-            <p>Level: {app.interviewLevel}</p>
+           
+            <p><b>Level:</b> {level}</p>
 
-            {/* ================= HR REQUEST ================= */}
+            <p><b>Date:</b> {formatDate(date)}</p>
+            <p><b>Time:</b> {formatTime(time)}</p>
+            <p><b>Mode:</b> {mode}</p>
 
-            {app.interviewerStatus === "REQUESTED" && (
+            
+
+            {interviewerStatus === "REQUESTED" && (
               <>
                 <p>HR assigned this interview</p>
 
@@ -106,22 +114,19 @@ function InterviewerDashboard() {
               </>
             )}
 
-            {/* ================= ACCEPTED ================= */}
+            {/* PASS / FAIL */}
 
-            {app.interviewerStatus === "ACCEPTED" &&
+            {interviewerStatus === "ACCEPTED" &&
              app.interviewStatus.includes("SCHEDULED") && (
-
               <>
-                <p>You accepted this interview</p>
+                <p>Interview accepted</p>
 
                 <button
-                  disabled={isResultDone}
+                  disabled={resultDone}
                   onClick={() =>
                     updateResult(
                       app.id,
-                      app.interviewLevel === "L1"
-                        ? "L1_PASSED"
-                        : "L2_PASSED"
+                      level === "L1" ? "L1_PASSED" : "L2_PASSED"
                     )
                   }
                 >
@@ -129,35 +134,34 @@ function InterviewerDashboard() {
                 </button>
 
                 <button
-                  disabled={isResultDone}
+                  disabled={resultDone}
                   onClick={() =>
                     updateResult(
                       app.id,
-                      app.interviewLevel === "L1"
-                        ? "L1_FAILED"
-                        : "L2_FAILED"
+                      level === "L1" ? "L1_FAILED" : "L2_FAILED"
                     )
                   }
                 >
                   Mark as Failed
                 </button>
-
-                {isResultDone && <p>Result submitted</p>}
               </>
             )}
 
-            {/* ================= REJECTED ================= */}
+            
 
-            {app.interviewerStatus === "REJECTED" && (
-              <p>You rejected this request</p>
-            )}
+            {(app.l1Result === "PASSED" && level === "L1") ||
+             (app.l2Result === "PASSED" && level === "L2") ? (
+              <p style={{ color: "green", fontWeight: "bold" }}>
+                ✅ Candidate cleared this round
+              </p>
+            ) : null}
 
-            {/* ================= FINAL STATUS ================= */}
-
-            {app.interviewStatus === "L1_PASSED" && <p>L1 Cleared</p>}
-            {app.interviewStatus === "L1_FAILED" && <p>L1 Failed</p>}
-            {app.interviewStatus === "L2_PASSED" && <p>Selected ✅</p>}
-            {app.interviewStatus === "L2_FAILED" && <p>Rejected ❌</p>}
+            {(app.l1Result === "FAILED" && level === "L1") ||
+             (app.l2Result === "FAILED" && level === "L2") ? (
+              <p style={{ color: "red", fontWeight: "bold" }}>
+                ❌ Candidate failed this round
+              </p>
+            ) : null}
 
             <hr />
 
