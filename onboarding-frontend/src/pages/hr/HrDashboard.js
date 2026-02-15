@@ -1,12 +1,18 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 
 function HrDashboard() {
+
+  const navigate = useNavigate();
+  const { user, logout } = useContext(AuthContext);
 
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [ctc, setCtc] = useState("");
   const [description, setDescription] = useState("");
+  const [companyName, setCompanyName] = useState("");
 
   const [internships, setInternships] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -19,6 +25,25 @@ function HrDashboard() {
   const [pdfUploaded, setPdfUploaded] = useState(false);
 
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+
+    if (!user || user.role !== "HR") {
+      navigate("/");
+      return;
+    }
+
+    fetchInternships();
+    fetchApplications();
+
+    const interval = setInterval(() => {
+      fetchInternships();
+      fetchApplications();
+    }, 5000);
+
+    return () => clearInterval(interval);
+
+  }, [user, navigate]);
 
   const formatDate = (dateString) =>
     dateString &&
@@ -39,26 +64,22 @@ function HrDashboard() {
   const getInterviewerName = (id) =>
     id === 1 ? "Kavya" : id === 2 ? "Arun" : id === 3 ? "Divya" : "";
 
-  useEffect(() => {
-    fetchInternships();
-    fetchApplications();
-
-    const interval = setInterval(() => {
-      fetchInternships();
-      fetchApplications();
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   const fetchInternships = async () => {
-    const res = await axios.get("http://localhost:8080/api/internships");
-    setInternships(res.data);
+    try {
+      const res = await axios.get("http://localhost:8080/api/internships");
+      setInternships(res.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const fetchApplications = async () => {
-    const res = await axios.get("http://localhost:8080/api/applications");
-    setApplications(res.data);
+    try {
+      const res = await axios.get("http://localhost:8080/api/applications");
+      setApplications(res.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleOfferFileChange = (id, file) => {
@@ -101,6 +122,7 @@ function HrDashboard() {
     if (!pdfUploaded) return alert("Upload PDF first");
 
     const formData = new FormData();
+    formData.append("companyName", companyName);
     formData.append("title", title);
     formData.append("location", location);
     formData.append("ctc", ctc);
@@ -112,13 +134,17 @@ function HrDashboard() {
       formData
     );
 
+    setCompanyName("");
     setTitle("");
     setLocation("");
     setCtc("");
     setDescription("");
     setPdfUploaded(false);
     setPdfFile(null);
-    fileInputRef.current.value = "";
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
 
     fetchInternships();
   };
@@ -155,7 +181,8 @@ function HrDashboard() {
           date: data.date,
           time: data.time,
           mode: data.mode,
-          interviewerId: level === "HR" ? null : data.interviewerId
+          interviewerId:
+            level === "HR" ? null : Number(data.interviewerId)
         }
       }
     );
@@ -172,7 +199,6 @@ function HrDashboard() {
     fetchApplications();
   };
 
-  // ✅ STEP TRACKER
   const OfferProgress = ({ app }) => {
 
     const getIcon = (step) => {
@@ -200,24 +226,109 @@ function HrDashboard() {
   return (
     <div>
 
-      <h1>HR Dashboard</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h1>HR Dashboard</h1>
 
-      <h2>Post New Internship</h2>
+        <button
+          onClick={() => {
+            logout();
+            navigate("/");
+          }}
+          style={{
+            padding: "8px 16px",
+            background: "black",
+            color: "#fff",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer"
+          }}
+        >
+          Logout
+        </button>
+      </div>
 
-      <input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
-      <input placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} />
-      <input placeholder="CTC" value={ctc} onChange={(e) => setCtc(e.target.value)} />
+     <div
+  style={{
+    border: "1px solid black",
+    padding: "20px",
+    marginBottom: "25px",
+    maxWidth: "600px"
+  }}
+>
+  <h2 style={{ marginBottom: "15px" }}>Post New Internship</h2>
 
-      <textarea placeholder="Description" value={description}
-        onChange={(e) => setDescription(e.target.value)} />
+  <input
+    style={{ display: "block", width: "100%", padding: "8px", marginBottom: "10px", border: "1px solid black" }}
+    placeholder="Title"
+    value={title}
+    onChange={(e) => setTitle(e.target.value)}
+  />
 
-      <br /><br />
+  <input
+    style={{ display: "block", width: "100%", padding: "8px", marginBottom: "10px", border: "1px solid black" }}
+    placeholder="Location"
+    value={location}
+    onChange={(e) => setLocation(e.target.value)}
+  />
 
-      <input type="file" ref={fileInputRef}
-        onChange={(e) => setPdfFile(e.target.files[0])} />
+  <input
+    style={{ display: "block", width: "100%", padding: "8px", marginBottom: "10px", border: "1px solid black" }}
+    placeholder="CTC"
+    value={ctc}
+    onChange={(e) => setCtc(e.target.value)}
+  />
 
-      <button onClick={handlePdfUpload}>Upload PDF</button>
-      {pdfUploaded && <button onClick={handlePost}>Post Internship</button>}
+  <input
+    style={{ display: "block", width: "100%", padding: "8px", marginBottom: "10px", border: "1px solid black" }}
+    placeholder="Company Name"
+    value={companyName}
+    onChange={(e) => setCompanyName(e.target.value)}
+  />
+
+  <textarea
+    style={{ width: "100%", padding: "8px", marginBottom: "10px", border: "1px solid black" }}
+    placeholder="Description"
+    value={description}
+    onChange={(e) => setDescription(e.target.value)}
+  />
+
+  <input
+    type="file"
+    ref={fileInputRef}
+    onChange={(e) => setPdfFile(e.target.files[0])}
+    style={{ marginBottom: "10px" }}
+  />
+
+  <button
+    onClick={handlePdfUpload}
+    style={{
+      background: "black",
+      color: "white",
+      padding: "8px 16px",
+      border: "none",
+      marginRight: "10px",
+      cursor: "pointer"
+    }}
+  >
+    Upload PDF
+  </button>
+
+  {pdfUploaded && (
+    <button
+      onClick={handlePost}
+      style={{
+        background: "black",
+        color: "white",
+        padding: "8px 16px",
+        border: "none",
+        cursor: "pointer"
+      }}
+    >
+      Post Internship
+    </button>
+  )}
+</div>
+
 
       <hr />
 
@@ -226,12 +337,16 @@ function HrDashboard() {
       {internships.map((i) => (
         <div key={i.id}>
           <h3>{i.title}</h3>
+          <p><b>Company:</b> {i.companyName}</p>
           <p><b>Place:</b> {i.location}</p>
           <p><b>CTC:</b> {i.ctc}</p>
           <p><b>Description:</b> {i.description}</p>
           <button onClick={() => handleDelete(i.id)}>Delete</button>
         </div>
       ))}
+
+    
+
 
       <hr />
 
@@ -264,23 +379,23 @@ function HrDashboard() {
               {app.interviewStatus === "HR_SCHEDULED" && !app.hrResult &&
                 <p>HR – {formatDate(app.hrDate)} | {formatTime(app.hrTime)} | {app.hrMode}</p>}
 
+              {app.l1Date &&
+                <p>L1 – {formatDate(app.l1Date)} | {getInterviewerName(app.l1InterviewerId)} | {app.l1Mode}</p>}
+
               {app.interviewStatus === "L1_FAILED" &&
                 <p style={{ color: "red", fontWeight: "bold" }}>Candidate failed to clear L1</p>}
+
+              {app.l2Date &&
+                <p>L2 – {formatDate(app.l2Date)} | {getInterviewerName(app.l2InterviewerId)} | {app.l2Mode}</p>}
 
               {app.interviewStatus === "L2_FAILED" &&
                 <p style={{ color: "red", fontWeight: "bold" }}>Candidate failed to clear L2</p>}
 
+              {app.hrDate &&
+                <p>HR – {formatDate(app.hrDate)} | HR | {app.hrMode}</p>}
+
               {app.interviewStatus === "HR_FAILED" &&
                 <p style={{ color: "red", fontWeight: "bold" }}>Candidate failed in HR round</p>}
-
-              {app.l1Result === "PASSED" &&
-                <p>L1 – {formatDate(app.l1Date)} | {getInterviewerName(app.l1InterviewerId)} | {app.l1Mode}</p>}
-
-              {app.l2Result === "PASSED" &&
-                <p>L2 – {formatDate(app.l2Date)} | {getInterviewerName(app.l2InterviewerId)} | {app.l2Mode}</p>}
-
-              {app.hrResult === "PASSED" &&
-                <p>HR – {formatDate(app.hrDate)} | HR | {app.hrMode}</p>}
 
               {app.status === "SELECTED" &&
                 <p style={{ color: "green", fontWeight: "bold" }}>
@@ -291,7 +406,7 @@ function HrDashboard() {
 
               {app.signedOfferLetter && (
                 <div>
-                  <p style={{ color: "green" }}>Signed offer received</p>
+                  <p style={{ color: "black" }}>Signed offer received</p>
                   <a
                     href={`http://localhost:8080/signed-offers/${app.signedOfferLetter}`}
                     target="_blank"
@@ -344,20 +459,25 @@ function HrDashboard() {
                   </select>
                 )}
 
-                <button
-                  onClick={() =>
-                    scheduleInterview(
-                      app.id,
-                      app.status === "TEST_PASSED"
-                        ? "L1"
-                        : app.status === "L2_PENDING"
-                          ? "L2"
-                          : "HR"
-                    )
-                  }
-                >
-                  Schedule Interview
-                </button>
+               <button
+  onClick={() =>
+    scheduleInterview(
+      app.id,
+      app.status === "TEST_PASSED"
+        ? "L1"
+        : app.status === "L2_PENDING"
+        ? "L2"
+        : "HR"
+    )
+  }
+>
+  {app.status === "TEST_PASSED"
+    ? "Schedule L1"
+    : app.status === "L2_PENDING"
+    ? "Schedule L2"
+    : "Schedule HR"}
+</button>
+
               </>
             )}
 

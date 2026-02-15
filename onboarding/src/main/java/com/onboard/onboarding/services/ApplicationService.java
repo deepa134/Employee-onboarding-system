@@ -60,6 +60,7 @@ public class ApplicationService {
         return applicationRepository.save(application);
     }
 
+    // ✅ INTERVIEW SCHEDULE + EMAIL
     public Application scheduleInterview(Long applicationId,
                                          String level,
                                          LocalDate date,
@@ -99,7 +100,21 @@ public class ApplicationService {
             app.setInterviewStatus("HR_SCHEDULED");
         }
 
-        return applicationRepository.save(app);
+        applicationRepository.save(app);
+
+        String subject = level + " Interview Scheduled";
+
+        String body = "Dear " + app.getCandidateName() + ",\n\n" +
+                "Your " + level + " interview has been scheduled.\n\n" +
+                "Date: " + date + "\n" +
+                "Time: " + time + "\n" +
+                "Mode: " + mode + "\n\n" +
+                "Please login to the portal for more details.\n\n" +
+                "Best Regards,\nHR Team";
+
+        emailService.sendEmail(app.getEmail(), subject, body);
+
+        return app;
     }
 
     public Application updateInterviewerStatus(Long applicationId, String status) {
@@ -118,6 +133,7 @@ public class ApplicationService {
         return applicationRepository.save(app);
     }
 
+    // ✅ L1 / L2 RESULT + REJECTION MAIL
     public Application updateInterviewResult(Long applicationId, String result) {
 
         Application app = applicationRepository.findById(applicationId)
@@ -133,6 +149,7 @@ public class ApplicationService {
             app.setL1Result("FAILED");
             app.setInterviewStatus("L1_FAILED");
             app.setStatus("REJECTED");
+            sendRejectionMail(app, "L1");
         }
 
         if ("L2_PASSED".equals(result)) {
@@ -145,11 +162,13 @@ public class ApplicationService {
             app.setL2Result("FAILED");
             app.setInterviewStatus("L2_FAILED");
             app.setStatus("REJECTED");
+            sendRejectionMail(app, "L2");
         }
 
         return applicationRepository.save(app);
     }
 
+    // ✅ HR RESULT + SELECTION / REJECTION MAIL
     public Application updateHrResult(Long applicationId, String result) {
 
         Application app = applicationRepository.findById(applicationId)
@@ -159,12 +178,22 @@ public class ApplicationService {
             app.setHrResult("PASSED");
             app.setInterviewStatus("HR_PASSED");
             app.setStatus("SELECTED");
+
+            String subject = "Congratulations – You are Selected!";
+            String body = "Dear " + app.getCandidateName() + ",\n\n" +
+                    "Congratulations!\n\n" +
+                    "You have successfully cleared all interview rounds.\n" +
+                    "Our HR team will release the offer letter shortly.\n\n" +
+                    "Best Regards,\nHR Team";
+
+            emailService.sendEmail(app.getEmail(), subject, body);
         }
 
         if ("HR_FAILED".equals(result)) {
             app.setHrResult("FAILED");
             app.setInterviewStatus("HR_FAILED");
             app.setStatus("REJECTED");
+            sendRejectionMail(app, "HR");
         }
 
         return applicationRepository.save(app);
@@ -223,5 +252,19 @@ public class ApplicationService {
         emailService.sendEmail("yourgmail@gmail.com", subject, body);
 
         return applicationRepository.save(app);
+    }
+
+    // ✅ COMMON REJECTION MAIL
+    private void sendRejectionMail(Application app, String level) {
+
+        String subject = "Interview Update";
+
+        String body = "Dear " + app.getCandidateName() + ",\n\n" +
+                "Thank you for attending the " + level + " interview.\n\n" +
+                "We regret to inform you that you have not been selected for the next stage.\n\n" +
+                "We wish you all the best for your future.\n\n" +
+                "Best Regards,\nHR Team";
+
+        emailService.sendEmail(app.getEmail(), subject, body);
     }
 }

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 function OnlineTest() {
+
   const navigate = useNavigate();
   const { applicationId } = useParams();
 
@@ -30,6 +31,7 @@ function OnlineTest() {
   ];
 
   const submitTest = async () => {
+
     if (submitting) return;
 
     if (Object.keys(answers).length < questions.length) {
@@ -59,8 +61,8 @@ function OnlineTest() {
 
       alert(`Test Submitted Successfully!\nScore: ${score}/15`);
 
-      // Force refresh dashboard
-      window.location.href = "/candidate";
+     
+      navigate("/candidate/dashboard");
 
     } catch (error) {
       console.error(error);
@@ -97,8 +99,12 @@ function OnlineTest() {
                 marginTop: "8px",
                 padding: "8px 12px",
                 borderRadius: "5px",
-                border: answers[q.id] === opt ? "2px solid green" : "1px solid #ccc",
-                background: answers[q.id] === opt ? "#d4edda" : "white",
+                border: answers[q.id] === opt
+                  ? "2px solid green"
+                  : "1px solid #ccc",
+                background: answers[q.id] === opt
+                  ? "#d4edda"
+                  : "white",
                 cursor: "pointer"
               }}
             >

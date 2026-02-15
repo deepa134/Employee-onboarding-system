@@ -47,6 +47,7 @@ public class InternshipController {
 
     @PostMapping("/post")
     public Internship postInternship(
+            @RequestParam("companyName")String companyName,
             @RequestParam("title") String title,
             @RequestParam("location") String location,
             @RequestParam("ctc") String ctc,
@@ -59,6 +60,7 @@ public class InternshipController {
         internship.setCtc(ctc);
         internship.setDescription(description);
         internship.setPdfFileName(pdfFileName);
+        internship.setCompanyName(companyName); 
 
         return internshipService.postInternship(internship);
     }

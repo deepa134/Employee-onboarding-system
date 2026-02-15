@@ -19,6 +19,8 @@ public class Internship {
     private String ctc;
     private String location;  
     private String pdfFileName;
+    private String companyName;
+
 
     @Enumerated(EnumType.STRING)
     private InternshipStatus status = InternshipStatus.OPEN;

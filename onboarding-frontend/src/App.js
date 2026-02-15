@@ -1,27 +1,28 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HrDashboard from "./pages/hr/HrDashboard";
 import CandidateDashboard from "./pages/candidate/CandidateDashboard";
 import OnlineTest from "./pages/candidate/OnlineTest";
 import InterviewerDashboard from "./pages/interviewer/InterviewerDashboard";
+import Login from "./pages/Login";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* Default Route */}
-        <Route path="/" element={<Navigate to="/candidate" />} />
+        
+        <Route path="/" element={<Login />} />
 
-        {/* HR Dashboard */}
-        <Route path="/hr" element={<HrDashboard />} />
+       
+        <Route path="/hr/dashboard" element={<HrDashboard />} />
 
-        {/* Candidate Dashboard */}
-        <Route path="/candidate" element={<CandidateDashboard />} />
+       
+        <Route path="/candidate/dashboard" element={<CandidateDashboard />} />
 
-        {/* Online Test */}
+        
         <Route path="/candidate/test/:applicationId" element={<OnlineTest />} />
 
-        {/* ✅ DYNAMIC INTERVIEWER ROUTE */}
+        
         <Route path="/interviewer/:id" element={<InterviewerDashboard />} />
 
       </Routes>

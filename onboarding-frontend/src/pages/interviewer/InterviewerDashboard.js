@@ -1,17 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 
 function InterviewerDashboard() {
 
-  const { id: interviewerId } = useParams();
+  const navigate = useNavigate();
+  const { user, logout } = useContext(AuthContext);
+
+  const interviewerId = user?.interviewerId;
+
   const [applications, setApplications] = useState([]);
 
   useEffect(() => {
+
+    if (!user || user.role !== "INTERVIEWER") {
+      navigate("/");
+      return;
+    }
+
     fetchApplications();
+
     const interval = setInterval(fetchApplications, 5000);
     return () => clearInterval(interval);
-  }, []);
+
+  }, [user]);
 
   const fetchApplications = async () => {
     const res = await axios.get(
@@ -55,11 +68,26 @@ function InterviewerDashboard() {
   };
 
   return (
-    <div>
+    <div style={page}>
 
-      <h2>Interviewer Dashboard</h2>
+     
+      <div style={header}>
+        <h2 style={{ margin: 0 }}>
+          Welcome {user?.interviewerName}
+        </h2>
 
-      {applications.length === 0 && <p>No interview requests</p>}
+        <button
+          onClick={() => {
+            logout();
+            navigate("/");
+          }}
+          style={logoutBtn}
+        >
+          Logout
+        </button>
+      </div>
+
+      {applications.length === 0 && <p style={{ opacity: 0.6 }}>No interview requests</p>}
 
       {applications.map((app) => {
 
@@ -79,98 +107,164 @@ function InterviewerDashboard() {
           : app.l2Result === "PASSED" || app.l2Result === "FAILED";
 
         return (
-          <div key={app.id}>
+          <div key={app.id} style={card}>
 
-            <h3>{app.candidateName}</h3>
-            <p>{app.email}</p>
+            <div style={rowBetween}>
+              <h3 style={{ margin: 0 }}>{app.candidateName}</h3>
+              <span style={levelBadge}>{level}</span>
+            </div>
 
-            <p><b>Level:</b> {level}</p>
+            <p style={email}>{app.email}</p>
 
-            <p><b>Date:</b> {formatDate(date)}</p>
-            <p><b>Time:</b> {formatTime(time)}</p>
-            <p><b>Mode:</b> {mode}</p>
+            <div style={infoGrid}>
+              <span><b>Date:</b> {formatDate(date)}</span>
+              <span><b>Time:</b> {formatTime(time)}</span>
+              <span><b>Mode:</b> {mode}</span>
+            </div>
 
             {interviewerStatus === "REQUESTED" && (
               <>
-                <p>HR assigned this interview</p>
+                <p style={muted}>HR assigned this interview</p>
 
-                <button onClick={() =>
-                  respondToRequest(app.id, "ACCEPTED")
-                }>
-                  Accept
-                </button>
+                <div style={btnRow}>
+                  <button onClick={() => respondToRequest(app.id, "ACCEPTED")} style={primaryBtn}>
+                    Accept
+                  </button>
 
-                <button onClick={() =>
-                  respondToRequest(app.id, "REJECTED")
-                }>
-                  Reject
-                </button>
+                  <button onClick={() => respondToRequest(app.id, "REJECTED")} style={secondaryBtn}>
+                    Reject
+                  </button>
+                </div>
               </>
             )}
 
             {interviewerStatus === "ACCEPTED" &&
              app.interviewStatus.includes("SCHEDULED") && (
               <>
-                <p>Interview accepted</p>
+                <p style={muted}>Interview accepted</p>
 
-                <button
-                  disabled={resultDone}
-                  onClick={() =>
-                    updateResult(
-                      app.id,
-                      level === "L1" ? "L1_PASSED" : "L2_PASSED"
-                    )
-                  }
-                >
-                  Mark as Passed
-                </button>
+                <div style={btnRow}>
+                  <button
+                    disabled={resultDone}
+                    onClick={() =>
+                      updateResult(app.id, level === "L1" ? "L1_PASSED" : "L2_PASSED")
+                    }
+                    style={primaryBtn}
+                  >
+                    Mark as Passed
+                  </button>
 
-                <button
-                  disabled={resultDone}
-                  onClick={() =>
-                    updateResult(
-                      app.id,
-                      level === "L1" ? "L1_FAILED" : "L2_FAILED"
-                    )
-                  }
-                >
-                  Mark as Failed
-                </button>
+                  <button
+                    disabled={resultDone}
+                    onClick={() =>
+                      updateResult(app.id, level === "L1" ? "L1_FAILED" : "L2_FAILED")
+                    }
+                    style={secondaryBtn}
+                  >
+                    Mark as Failed
+                  </button>
+                </div>
               </>
             )}
 
-            {level === "L1" && app.l1Result === "PASSED" && (
-              <p style={{ color: "green", fontWeight: "bold" }}>
-                Candidate cleared this round
-              </p>
-            )}
-
-            {level === "L2" && app.l2Result === "PASSED" && (
-              <p style={{ color: "green", fontWeight: "bold" }}>
-                Candidate cleared this round
-              </p>
-            )}
-
-            {level === "L1" && app.l1Result === "FAILED" && (
-              <p style={{ color: "red", fontWeight: "bold" }}>
-                Candidate failed this round
-              </p>
-            )}
-
-            {level === "L2" && app.l2Result === "FAILED" && (
-              <p style={{ color: "red", fontWeight: "bold" }}>
-                Candidate failed this round
-              </p>
-            )}
-
-            <hr />
+            {level === "L1" && app.l1Result === "PASSED" && <p style={success}>Candidate cleared this round</p>}
+            {level === "L2" && app.l2Result === "PASSED" && <p style={success}>Candidate cleared this round</p>}
+            {level === "L1" && app.l1Result === "FAILED" && <p style={fail}>Candidate failed this round</p>}
+            {level === "L2" && app.l2Result === "FAILED" && <p style={fail}>Candidate failed this round</p>}
 
           </div>
         );
       })}
-
     </div>
   );
 }
 
 export default InterviewerDashboard;
+
+
+
+const page = {
+  padding: 40,
+  background: "#f5f5f5",
+  minHeight: "100vh"
+};
+
+const header = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 30
+};
+
+const logoutBtn = {
+  background: "#000",
+  color: "#fff",
+  padding: "4px 12px",
+  border: "none",
+  borderRadius: 6,
+  fontSize: 13,
+  cursor: "pointer"
+};
+
+const card = {
+  background: "#fff",
+  padding: 20,
+  borderRadius: 10,
+  border: "1px solid #e5e5e5",
+  marginBottom: 20
+};
+
+const rowBetween = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center"
+};
+
+const levelBadge = {
+  fontSize: 12,
+  background: "#eee",
+  padding: "3px 8px",
+  borderRadius: 6
+};
+
+const email = {
+  marginTop: 4,
+  fontSize: 13,
+  opacity: 0.7
+};
+
+const infoGrid = {
+  display: "flex",
+  gap: 20,
+  marginTop: 10,
+  fontSize: 14
+};
+
+const btnRow = {
+  display: "flex",
+  gap: 10,
+  marginTop: 10
+};
+
+const primaryBtn = {
+  background: "#000",
+  color: "#fff",
+  border: "none",
+  padding: "6px 12px",
+  borderRadius: 6,
+  cursor: "pointer",
+  fontSize: 13
+};
+
+const secondaryBtn = {
+  background: "#eaeaea",
+  border: "none",
+  padding: "6px 12px",
+  borderRadius: 6,
+  cursor: "pointer",
+  fontSize: 13
+};
+
+const muted = { fontSize: 13, opacity: 0.7 };
+const success = { color: "green", fontWeight: 500, fontSize: 13 };
+const fail = { color: "red", fontWeight: 500, fontSize: 13 };

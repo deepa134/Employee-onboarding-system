@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 
 function CandidateDashboard() {
 
   const navigate = useNavigate();
+  const { user, logout } = useContext(AuthContext);
 
   const [internships, setInternships] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -21,11 +23,19 @@ function CandidateDashboard() {
   const [signedFiles, setSignedFiles] = useState({});
 
   useEffect(() => {
+
+    if (!user) {
+      navigate("/");
+      return;
+    }
+
     fetchInternships();
     fetchApplications();
+
     const interval = setInterval(fetchApplications, 5000);
     return () => clearInterval(interval);
-  }, []);
+
+  }, [user]);
 
   const fetchInternships = async () => {
     const res = await axios.get("http://localhost:8080/api/internships");
@@ -34,7 +44,12 @@ function CandidateDashboard() {
 
   const fetchApplications = async () => {
     const res = await axios.get("http://localhost:8080/api/applications");
-    setApplications(res.data);
+
+    const filtered = res.data.filter(
+      (app) => app.email === user.email
+    );
+
+    setApplications(filtered);
   };
 
   const formatDate = (dateString) =>
@@ -70,7 +85,7 @@ function CandidateDashboard() {
     const formData = new FormData();
     formData.append("internshipId", selectedInternship.id);
     formData.append("candidateName", candidateName);
-    formData.append("email", "manid6134@gmail.com");
+    formData.append("email", user.email);
     formData.append("phone", phone);
     formData.append("degree", degree);
     formData.append("college", college);
@@ -131,12 +146,39 @@ function CandidateDashboard() {
   return (
     <div style={{ padding: "30px", fontFamily: "Arial" }}>
 
-      <h1>Candidate Dashboard</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <h1>Candidate Dashboard</h1>
+          <p style={{ color: "gray", margin: 0 }}>{user?.email}</p>
+        </div>
+
+        <button
+          onClick={() => {
+            logout();
+            navigate("/");
+          }}
+          style={{
+            padding: "8px 16px",
+            background: "black",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer"
+          }}
+        >
+          Logout
+        </button>
+      </div>
 
       <h2>Available Internships</h2>
 
       {internships.map((i) => (
         <div key={i.id} style={card}>
+
+          <h3 style={{ textAlign: "center", color: "#111827" }}>
+            {i.companyName}
+          </h3>
+
           <h3>{i.title}</h3>
           <p><b>Location:</b> {i.location}</p>
           <p><b>CTC:</b> {i.ctc}</p>
@@ -188,13 +230,21 @@ function CandidateDashboard() {
         return (
           <div key={app.id} style={card}>
 
+           
+            <h3 style={{ textAlign: "center", color: "#111827" }}>
+              {internship?.companyName}
+            </h3>
+
             <h3>{internship?.title}</h3>
 
-            {app.offerStatus === "REJECTED" && (
+            
+
+
+            {app.offerStatus === "REJECTED" &&
               <p style={{ color: "red", fontWeight: "bold" }}>
                 ❌ You rejected the offer
               </p>
-            )}
+            }
 
             {app.status === "TEST_ACTIVE" && (
               <>
@@ -209,7 +259,12 @@ function CandidateDashboard() {
             )}
 
             {app.status === "TEST_PASSED" &&
-              <p style={{ color: "green" }}>You cleared the online test</p>}
+              <p style={{ color: "#111827" }}>You cleared the online test</p>}
+
+            {app.status === "TEST_FAILED" &&
+              <p style={{ color: "red", fontWeight: "bold" }}>
+                ❌ You did not clear the online test
+              </p>}
 
             {app.interviewStatus === "L1_SCHEDULED" && (
               <div style={interviewBox}>
@@ -221,7 +276,13 @@ function CandidateDashboard() {
               </div>
             )}
 
-            {app.l1Result === "PASSED" && <p style={{ color: "green" }}>You cleared L1</p>}
+            {app.l1Result === "PASSED" &&
+              <p style={{ color: "#111827" }}>You cleared L1</p>}
+
+            {app.interviewStatus === "L1_FAILED" &&
+              <p style={{ color: "red", fontWeight: "bold" }}>
+                ❌ You did not clear L1
+              </p>}
 
             {app.interviewStatus === "L2_SCHEDULED" && (
               <div style={interviewBox}>
@@ -233,7 +294,13 @@ function CandidateDashboard() {
               </div>
             )}
 
-            {app.l2Result === "PASSED" && <p style={{ color: "green" }}>You cleared L2</p>}
+            {app.l2Result === "PASSED" &&
+              <p style={{ color: "#111827" }}>You cleared L2</p>}
+
+            {app.interviewStatus === "L2_FAILED" &&
+              <p style={{ color: "red", fontWeight: "bold" }}>
+                ❌ You did not clear L2
+              </p>}
 
             {app.interviewStatus === "HR_SCHEDULED" && !app.hrResult && (
               <div style={interviewBox}>
@@ -245,14 +312,15 @@ function CandidateDashboard() {
             )}
 
             {app.hrResult === "PASSED" &&
-              <p style={{ color: "green", fontWeight: "bold" }}>HR round cleared</p>}
+              <p style={{ color: "#111827" }}>HR round cleared</p>}
 
             {app.hrResult === "FAILED" &&
-              <p style={{ color: "red", fontWeight: "bold" }}>HR round not cleared</p>}
+              <p style={{ color: "red", fontWeight: "bold" }}>
+                ❌ HR round not cleared
+              </p>}
 
             {app.offerLetterFile && app.offerStatus !== "REJECTED" && (
               <div style={interviewBox}>
-
                 <a
                   href={`http://localhost:8080/offers/${app.offerLetterFile}`}
                   target="_blank"
@@ -283,7 +351,7 @@ function CandidateDashboard() {
                 )}
 
                 {app.signedOfferLetter &&
-                  <p style={{ color: "green" }}>Offer accepted & signed</p>}
+                  <p style={{ color: "black" }}>Offer accepted & signed</p>}
               </div>
             )}
 
@@ -297,11 +365,75 @@ function CandidateDashboard() {
 
 export default CandidateDashboard;
 
-const card = { border: "1px solid #ccc", padding: 20, borderRadius: 10, marginBottom: 20, background: "#f9f9f9" };
-const applyBtn = { padding: "6px 12px", background: "#007bff", color: "#fff", border: "none", borderRadius: 4 };
-const appliedBtn = { padding: "6px 12px", background: "gray", color: "#fff", border: "none", borderRadius: 4 };
-const submitBtn = { marginTop: 15, padding: "10px 20px", background: "green", color: "#fff", border: "none", borderRadius: 5 };
-const input = { width: "100%", marginBottom: 10, padding: 8 };
-const formBox = { marginTop: 30, padding: 20, background: "#f4f4f4", borderRadius: 8 };
-const testBtn = { padding: "8px 15px", background: "orange", color: "#fff", border: "none", borderRadius: 5, marginTop: 10 };
-const interviewBox = { marginTop: "10px", padding: "12px", background: "#e8f5e9", borderRadius: "8px", color: "green", fontWeight: "bold" };
+const card = {
+  border: "1px solid #e5e7eb",
+  padding: 20,
+  borderRadius: 10,
+  marginBottom: 20,
+  background: "#ffffff",
+  color: "#111827"
+};
+
+const applyBtn = {
+  padding: "6px 12px",
+  background: "#111827",
+  color: "#ffffff",
+  border: "none",
+  borderRadius: 6,
+  cursor: "pointer"
+};
+
+const appliedBtn = {
+  padding: "6px 12px",
+  background: "#e5e7eb",
+  color: "#374151",
+  border: "none",
+  borderRadius: 6
+};
+
+const submitBtn = {
+  marginTop: 15,
+  padding: "10px 20px",
+  background: "#111827",
+  color: "#ffffff",
+  border: "none",
+  borderRadius: 6,
+  cursor: "pointer"
+};
+
+const input = {
+  width: "100%",
+  marginBottom: 10,
+  padding: 10,
+  border: "1px solid #e5e7eb",
+  borderRadius: 6,
+  color: "#111827"
+};
+
+const formBox = {
+  marginTop: 30,
+  padding: 20,
+  background: "#ffffff",
+  borderRadius: 10,
+  border: "1px solid #e5e7eb"
+};
+
+const testBtn = {
+  padding: "8px 15px",
+  background: "#111827",
+  color: "#ffffff",
+  border: "none",
+  borderRadius: 6,
+  marginTop: 10,
+  cursor: "pointer"
+};
+
+const interviewBox = {
+  marginTop: "10px",
+  padding: "12px",
+  background: "#f9fafb",
+  borderRadius: "8px",
+  border: "1px solid #e5e7eb",
+  color: "#111827",
+  fontWeight: 500
+};
