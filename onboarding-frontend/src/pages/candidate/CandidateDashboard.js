@@ -190,6 +190,12 @@ function CandidateDashboard() {
 
             <h3>{internship?.title}</h3>
 
+            {app.offerStatus === "REJECTED" && (
+              <p style={{ color: "red", fontWeight: "bold" }}>
+                ❌ You rejected the offer
+              </p>
+            )}
+
             {app.status === "TEST_ACTIVE" && (
               <>
                 <p>Test active till {formatDate(app.testDate)}</p>
@@ -244,7 +250,7 @@ function CandidateDashboard() {
             {app.hrResult === "FAILED" &&
               <p style={{ color: "red", fontWeight: "bold" }}>HR round not cleared</p>}
 
-            {app.offerLetterFile && (
+            {app.offerLetterFile && app.offerStatus !== "REJECTED" && (
               <div style={interviewBox}>
 
                 <a

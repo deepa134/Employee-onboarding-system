@@ -172,6 +172,31 @@ function HrDashboard() {
     fetchApplications();
   };
 
+  // ✅ STEP TRACKER
+  const OfferProgress = ({ app }) => {
+
+    const getIcon = (step) => {
+
+      if (app.offerStatus === "REJECTED") {
+        if (step === "accepted" || step === "signed") return "❌";
+      }
+
+      if (step === "sent" && app.offerLetterFile) return "✔";
+      if (step === "accepted" && app.offerStatus === "ACCEPTED") return "✔";
+      if (step === "signed" && app.signedOfferLetter) return "✔";
+
+      return "⏳";
+    };
+
+    return (
+      <div style={{ display: "flex", gap: "15px", marginTop: "8px" }}>
+        <span>{getIcon("sent")} Offer Sent</span>
+        <span>{getIcon("accepted")} Offer Accepted</span>
+        <span>{getIcon("signed")} Signed</span>
+      </div>
+    );
+  };
+
   return (
     <div>
 
@@ -262,11 +287,7 @@ function HrDashboard() {
                   Candidate cleared all rounds successfully
                 </p>}
 
-              {app.offerLetterFile && app.offerStatus === "PENDING" &&
-                <p>Offer letter sent</p>}
-
-              {app.offerStatus === "ACCEPTED" &&
-                <p style={{ color: "green" }}>Offer sent</p>}
+              {app.offerLetterFile && <OfferProgress app={app} />}
 
               {app.signedOfferLetter && (
                 <div>
