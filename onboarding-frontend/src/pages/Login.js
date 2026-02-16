@@ -116,62 +116,54 @@ const page = {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  background: "white",
-  fontFamily: "Arial"
+  background: "#fff",
+  fontFamily: "sans-serif"
 };
 
 const card = {
-  background: "#fff",
-  padding: "40px",
-  borderRadius: "12px",
-  width: "350px",
-  textAlign: "center",
-  boxShadow: "0 10px 30px rgba(0,0,0,0.2)"
+  padding: "25px",
+  width: "320px",
+  border: "1px solid #000"
 };
 
 const title = {
   marginBottom: "5px",
-  color: "#333"
+  fontSize: "20px"
 };
 
 const subtitle = {
-  marginBottom: "25px",
-  color: "gray",
-  fontSize: "14px"
+  marginBottom: "15px",
+  fontSize: "13px"
 };
 
 const roleContainer = {
   display: "flex",
-  justifyContent: "space-between",
-  marginBottom: "20px"
+  gap: "5px",
+  marginBottom: "15px"
 };
 
 const roleBtn = (active) => ({
   flex: 1,
-  margin: "0 5px",
-  padding: "8px",
-  borderRadius: "6px",
-  border: active ? "none" : "1px solid #ccc",
-  background: active ? "#111728" : "#fff",
-  color: active ? "#fff" : "#333",
+  padding: "6px",
+  border: "1px solid #000",
+  background: active ? "#000" : "#fff",
+  color: active ? "#fff" : "#000",
   cursor: "pointer"
 });
 
 const input = {
   width: "100%",
-  padding: "10px",
-  marginBottom: "15px",
-  borderRadius: "6px",
-  border: "1px solid #ccc"
+  padding: "7px",
+  marginBottom: "10px",
+  border: "1px solid #000"
 };
 
 const loginBtn = {
   width: "100%",
-  padding: "10px",
-  background: "#111728",
+  padding: "8px",
+  background: "#000",
   color: "#fff",
   border: "none",
-  borderRadius: "6px",
-  cursor: "pointer",
-  fontWeight: "bold"
+  cursor: "pointer"
 };
+

@@ -354,10 +354,13 @@ function HrDashboard() {
 
       {applications.map((app) => {
 
-        const showSchedule =
-          (app.status === "TEST_PASSED" && app.interviewStatus !== "L1_SCHEDULED") ||
-          (app.status === "L2_PENDING" && app.interviewStatus !== "L2_SCHEDULED") ||
-          (app.status === "HR_PENDING" && app.interviewStatus !== "HR_SCHEDULED");
+      const showSchedule =
+  (app.status === "TEST_PASSED" && app.interviewStatus !== "L1_SCHEDULED") ||
+  (app.status === "L2_PENDING" && app.interviewStatus !== "L2_SCHEDULED") ||
+  (app.status === "HR_PENDING" && app.interviewStatus !== "HR_SCHEDULED") ||
+  app.l1InterviewerStatus === "REJECTED" ||
+  app.l2InterviewerStatus === "REJECTED";
+
 
         return (
           <div key={app.id}>
@@ -381,6 +384,18 @@ function HrDashboard() {
 
               {app.l1Date &&
                 <p>L1 – {formatDate(app.l1Date)} | {getInterviewerName(app.l1InterviewerId)} | {app.l1Mode}</p>}
+              {app.l1InterviewerStatus === "REJECTED" && (
+  <p style={{ color: "red", fontWeight: "bold" }}>
+    L1 interviewer rejected — please reschedule
+  </p>
+)}
+
+{app.l2InterviewerStatus === "REJECTED" && (
+  <p style={{ color: "red", fontWeight: "bold" }}>
+    L2 interviewer rejected — please reschedule
+  </p>
+)}
+
 
               {app.interviewStatus === "L1_FAILED" &&
                 <p style={{ color: "red", fontWeight: "bold" }}>Candidate failed to clear L1</p>}

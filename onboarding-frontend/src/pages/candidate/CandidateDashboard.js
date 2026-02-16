@@ -242,7 +242,7 @@ function CandidateDashboard() {
 
             {app.offerStatus === "REJECTED" &&
               <p style={{ color: "red", fontWeight: "bold" }}>
-                ❌ You rejected the offer
+                You rejected the offer
               </p>
             }
 
@@ -263,7 +263,7 @@ function CandidateDashboard() {
 
             {app.status === "TEST_FAILED" &&
               <p style={{ color: "red", fontWeight: "bold" }}>
-                ❌ You did not clear the online test
+                 You did not clear the online test
               </p>}
 
             {app.interviewStatus === "L1_SCHEDULED" && (
@@ -281,7 +281,7 @@ function CandidateDashboard() {
 
             {app.interviewStatus === "L1_FAILED" &&
               <p style={{ color: "red", fontWeight: "bold" }}>
-                ❌ You did not clear L1
+                 You did not clear L1
               </p>}
 
             {app.interviewStatus === "L2_SCHEDULED" && (
@@ -299,7 +299,7 @@ function CandidateDashboard() {
 
             {app.interviewStatus === "L2_FAILED" &&
               <p style={{ color: "red", fontWeight: "bold" }}>
-                ❌ You did not clear L2
+                 You did not clear L2
               </p>}
 
             {app.interviewStatus === "HR_SCHEDULED" && !app.hrResult && (
@@ -316,7 +316,7 @@ function CandidateDashboard() {
 
             {app.hrResult === "FAILED" &&
               <p style={{ color: "red", fontWeight: "bold" }}>
-                ❌ HR round not cleared
+                HR round not cleared
               </p>}
 
             {app.offerLetterFile && app.offerStatus !== "REJECTED" && (
