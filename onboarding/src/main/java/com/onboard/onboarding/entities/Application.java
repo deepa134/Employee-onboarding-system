@@ -54,6 +54,7 @@ public class Application {
     private String offerStatus;
     private String signedOfferLetter;
     private String companyName;
+    
 
 
 }

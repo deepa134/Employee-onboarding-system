@@ -179,7 +179,7 @@ function CandidateDashboard() {
             {i.companyName}
           </h3>
 
-          <h3>{i.title}</h3>
+          <p><b>Role:</b>{i.title}</p>
           <p><b>Location:</b> {i.location}</p>
           <p><b>CTC:</b> {i.ctc}</p>
           <p><b>Description:</b> {i.description}</p>
@@ -240,11 +240,7 @@ function CandidateDashboard() {
             
 
 
-            {app.offerStatus === "REJECTED" &&
-              <p style={{ color: "red", fontWeight: "bold" }}>
-                You rejected the offer
-              </p>
-            }
+           
 
             {app.status === "TEST_ACTIVE" && (
               <>
@@ -259,68 +255,74 @@ function CandidateDashboard() {
             )}
 
             {app.status === "TEST_PASSED" &&
-              <p style={{ color: "#111827" }}>You cleared the online test</p>}
+              <p style={{ color: "#111827" }}>Online Test-Passed</p>}
 
             {app.status === "TEST_FAILED" &&
               <p style={{ color: "red", fontWeight: "bold" }}>
-                 You did not clear the online test
+                 Online Test-Not Cleared
               </p>}
 
             {app.interviewStatus === "L1_SCHEDULED" && (
               <div style={interviewBox}>
                 L1 Interview Scheduled <br />
-                {formatDate(app.l1Date)} <br />
-                {formatTime(app.l1Time)} <br />
-                {app.l1Mode} <br />
-                {getInterviewerName(app.l1InterviewerId)}
+                <b>Date:</b>{formatDate(app.l1Date)} <br />
+                <b>Time:</b>{formatTime(app.l1Time)} <br />
+                <b>Mode:</b>{app.l1Mode} <br />
+                <b>Interviewer</b>{getInterviewerName(app.l1InterviewerId)}
               </div>
             )}
 
             {app.l1Result === "PASSED" &&
-              <p style={{ color: "#111827" }}>You cleared L1</p>}
+              <p style={{ color: "#111827" }}> L1 Interview-Cleared</p>}
 
             {app.interviewStatus === "L1_FAILED" &&
               <p style={{ color: "red", fontWeight: "bold" }}>
-                 You did not clear L1
+                 L1 Interview-Not Cleared
               </p>}
 
             {app.interviewStatus === "L2_SCHEDULED" && (
               <div style={interviewBox}>
                 L2 Interview Scheduled <br />
-                {formatDate(app.l2Date)} <br />
-                {formatTime(app.l2Time)} <br />
-                {app.l2Mode} <br />
-                {getInterviewerName(app.l2InterviewerId)}
+                <b>Date:</b>{formatDate(app.l2Date)} <br />
+                <b>Time:</b>{formatTime(app.l2Time)} <br />
+                <b>Mode:</b>{app.l2Mode} <br />
+                <b>Interviewer :</b>{getInterviewerName(app.l2InterviewerId)}<br />
               </div>
             )}
 
             {app.l2Result === "PASSED" &&
-              <p style={{ color: "#111827" }}>You cleared L2</p>}
+              <p style={{ color: "#111827" }}>L2 Interview-Cleared</p>}
 
             {app.interviewStatus === "L2_FAILED" &&
               <p style={{ color: "red", fontWeight: "bold" }}>
-                 You did not clear L2
+                 L2 Interview-Not Cleared
               </p>}
 
             {app.interviewStatus === "HR_SCHEDULED" && !app.hrResult && (
               <div style={interviewBox}>
                 HR Interview Scheduled <br />
-                {formatDate(app.hrDate)} <br />
-                {formatTime(app.hrTime)} <br />
-                {app.hrMode}
+                <b>Date:</b>{formatDate(app.hrDate)} <br />
+                <b>Time:</b>{formatTime(app.hrTime)} <br />
+                <b>Mode:</b>{app.hrMode}
               </div>
             )}
 
             {app.hrResult === "PASSED" &&
-              <p style={{ color: "#111827" }}>HR round cleared</p>}
+              <p style={{ color: "#111827" }}>HR Round- Cleared</p>}
 
             {app.hrResult === "FAILED" &&
               <p style={{ color: "red", fontWeight: "bold" }}>
-                HR round not cleared
+                HR Round-Not Cleared
               </p>}
 
+             {app.offerStatus === "REJECTED" &&
+              <p style={{ color: "red", fontWeight: "bold" }}>
+                Offer-Declined
+              </p>
+            }
+
             {app.offerLetterFile && app.offerStatus !== "REJECTED" && (
-              <div style={interviewBox}>
+              <div style={{marginTop:"10px"}}>
                 <a
                   href={`http://localhost:8080/offers/${app.offerLetterFile}`}
                   target="_blank"
@@ -351,7 +353,7 @@ function CandidateDashboard() {
                 )}
 
                 {app.signedOfferLetter &&
-                  <p style={{ color: "black" }}>Offer accepted & signed</p>}
+                  <p style={{ color: "black" }}>Offer Process-Completed</p>}
               </div>
             )}
 
@@ -431,7 +433,7 @@ const testBtn = {
 const interviewBox = {
   marginTop: "10px",
   padding: "12px",
-  background: "#f9fafb",
+  background: "white",
   borderRadius: "8px",
   border: "1px solid #e5e7eb",
   color: "#111827",

@@ -60,7 +60,7 @@ public class ApplicationService {
         return applicationRepository.save(application);
     }
 
-    // ✅ INTERVIEW SCHEDULE + EMAIL
+   
     public Application scheduleInterview(Long applicationId,
                                          String level,
                                          LocalDate date,
@@ -133,7 +133,7 @@ public class ApplicationService {
         return applicationRepository.save(app);
     }
 
-    // ✅ L1 / L2 RESULT + REJECTION MAIL
+   
     public Application updateInterviewResult(Long applicationId, String result) {
 
         Application app = applicationRepository.findById(applicationId)
@@ -168,7 +168,7 @@ public class ApplicationService {
         return applicationRepository.save(app);
     }
 
-    // ✅ HR RESULT + SELECTION / REJECTION MAIL
+    
     public Application updateHrResult(Long applicationId, String result) {
 
         Application app = applicationRepository.findById(applicationId)
@@ -254,7 +254,7 @@ public class ApplicationService {
         return applicationRepository.save(app);
     }
 
-    // ✅ COMMON REJECTION MAIL
+    
     private void sendRejectionMail(Application app, String level) {
 
         String subject = "Interview Update";

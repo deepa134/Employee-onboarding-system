@@ -9,22 +9,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-
-        
         <Route path="/" element={<Login />} />
-
-       
         <Route path="/hr/dashboard" element={<HrDashboard />} />
-
-       
         <Route path="/candidate/dashboard" element={<CandidateDashboard />} />
-
-        
         <Route path="/candidate/test/:applicationId" element={<OnlineTest />} />
-
-        
         <Route path="/interviewer/:id" element={<InterviewerDashboard />} />
-
       </Routes>
     </BrowserRouter>
   );

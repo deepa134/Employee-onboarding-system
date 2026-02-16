@@ -199,29 +199,7 @@ function HrDashboard() {
     fetchApplications();
   };
 
-  const OfferProgress = ({ app }) => {
 
-    const getIcon = (step) => {
-
-      if (app.offerStatus === "REJECTED") {
-        if (step === "accepted" || step === "signed") return "❌";
-      }
-
-      if (step === "sent" && app.offerLetterFile) return "✔";
-      if (step === "accepted" && app.offerStatus === "ACCEPTED") return "✔";
-      if (step === "signed" && app.signedOfferLetter) return "✔";
-
-      return "⏳";
-    };
-
-    return (
-      <div style={{ display: "flex", gap: "15px", marginTop: "8px" }}>
-        <span>{getIcon("sent")} Offer Sent</span>
-        <span>{getIcon("accepted")} Offer Accepted</span>
-        <span>{getIcon("signed")} Signed</span>
-      </div>
-    );
-  };
 
   return (
     <div>
@@ -284,21 +262,18 @@ function HrDashboard() {
     value={companyName}
     onChange={(e) => setCompanyName(e.target.value)}
   />
-
   <textarea
     style={{ width: "100%", padding: "8px", marginBottom: "10px", border: "1px solid black" }}
     placeholder="Description"
     value={description}
     onChange={(e) => setDescription(e.target.value)}
   />
-
   <input
     type="file"
     ref={fileInputRef}
     onChange={(e) => setPdfFile(e.target.files[0])}
     style={{ marginBottom: "10px" }}
   />
-
   <button
     onClick={handlePdfUpload}
     style={{
@@ -312,7 +287,6 @@ function HrDashboard() {
   >
     Upload PDF
   </button>
-
   {pdfUploaded && (
     <button
       onClick={handlePost}
@@ -328,8 +302,6 @@ function HrDashboard() {
     </button>
   )}
 </div>
-
-
       <hr />
 
       <h2>Posted Internships</h2>
@@ -344,10 +316,6 @@ function HrDashboard() {
           <button onClick={() => handleDelete(i.id)}>Delete</button>
         </div>
       ))}
-
-    
-
-
       <hr />
 
       <h2>Candidates</h2>
@@ -360,8 +328,6 @@ function HrDashboard() {
   (app.status === "HR_PENDING" && app.interviewStatus !== "HR_SCHEDULED") ||
   app.l1InterviewerStatus === "REJECTED" ||
   app.l2InterviewerStatus === "REJECTED";
-
-
         return (
           <div key={app.id}>
 
@@ -389,14 +355,11 @@ function HrDashboard() {
     L1 interviewer rejected — please reschedule
   </p>
 )}
-
 {app.l2InterviewerStatus === "REJECTED" && (
   <p style={{ color: "red", fontWeight: "bold" }}>
     L2 interviewer rejected — please reschedule
   </p>
 )}
-
-
               {app.interviewStatus === "L1_FAILED" &&
                 <p style={{ color: "red", fontWeight: "bold" }}>Candidate failed to clear L1</p>}
 
@@ -413,15 +376,23 @@ function HrDashboard() {
                 <p style={{ color: "red", fontWeight: "bold" }}>Candidate failed in HR round</p>}
 
               {app.status === "SELECTED" &&
-                <p style={{ color: "green", fontWeight: "bold" }}>
+                <p style={{ color: "black", fontWeight: "bold" }}>
                   Candidate cleared all rounds successfully
                 </p>}
-
-              {app.offerLetterFile && <OfferProgress app={app} />}
+{app.offerLetterFile && (
+  <p style={{ color: "black", fontWeight: "bold" }}>
+     Offer Letter-- Sent
+  </p>
+)}
+              {app.signedOfferLetter && (
+  <p style={{ color: "#16a34a", fontWeight: 600 }}>
+    Offer Process — Completed
+  </p>
+)}
 
               {app.signedOfferLetter && (
                 <div>
-                  <p style={{ color: "black" }}>Signed offer received</p>
+                  
                   <a
                     href={`http://localhost:8080/signed-offers/${app.signedOfferLetter}`}
                     target="_blank"
@@ -433,7 +404,6 @@ function HrDashboard() {
               )}
 
             </div>
-
             {app.interviewStatus === "HR_SCHEDULED" &&
               app.status !== "SELECTED" &&
               app.status !== "REJECTED" && (
@@ -453,6 +423,7 @@ function HrDashboard() {
                 </button>
               </>
             )}
+          
 
             {showSchedule && (
               <>

@@ -114,7 +114,7 @@ function InterviewerDashboard() {
               <span style={levelBadge}>{level}</span>
             </div>
 
-            <p style={email}>{app.email}</p>
+            
 
             <div style={infoGrid}>
               <span><b>Date:</b> {formatDate(date)}</span>
@@ -185,7 +185,7 @@ export default InterviewerDashboard;
 
 const page = {
   padding: 40,
-  background: "#f5f5f5",
+  background: "white",
   minHeight: "100vh"
 };
 
@@ -207,10 +207,10 @@ const logoutBtn = {
 };
 
 const card = {
-  background: "#fff",
+  background: "#f5f5f5",
   padding: 20,
   borderRadius: 10,
-  border: "1px solid #e5e5e5",
+  border: "1px solid white",
   marginBottom: 20
 };
 
@@ -222,7 +222,7 @@ const rowBetween = {
 
 const levelBadge = {
   fontSize: 12,
-  background: "#eee",
+  background: "#f5f5f5",
   padding: "3px 8px",
   borderRadius: 6
 };
@@ -266,5 +266,5 @@ const secondaryBtn = {
 };
 
 const muted = { fontSize: 13, opacity: 0.7 };
-const success = { color: "green", fontWeight: 500, fontSize: 13 };
+const success = { color: "black", fontWeight: "bold", fontSize: 13 };
 const fail = { color: "red", fontWeight: 500, fontSize: 13 };

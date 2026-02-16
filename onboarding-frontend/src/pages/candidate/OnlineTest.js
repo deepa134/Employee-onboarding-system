@@ -16,13 +16,11 @@ function OnlineTest() {
     { id: 3, q: "5 * 6 = ?", options: ["30", "25", "20"], answer: "30" },
     { id: 4, q: "Java is ?", options: ["Language", "Database", "Browser"], answer: "Language" },
     { id: 5, q: "HTML stands for?", options: ["Hyper Text Markup Language", "High Text Machine Language", "Home Tool Markup Language"], answer: "Hyper Text Markup Language" },
-
     { id: 6, q: "10 / 2 = ?", options: ["2", "5", "8"], answer: "5" },
     { id: 7, q: "React is used for?", options: ["Frontend", "Backend", "Database"], answer: "Frontend" },
     { id: 8, q: "15 - 5 = ?", options: ["5", "10", "15"], answer: "10" },
     { id: 9, q: "Spring Boot is ?", options: ["Framework", "IDE", "Browser"], answer: "Framework" },
     { id: 10, q: "Which is OOP?", options: ["Java", "HTML", "CSS"], answer: "Java" },
-
     { id: 11, q: "Binary of 2?", options: ["10", "11", "01"], answer: "10" },
     { id: 12, q: "Largest planet?", options: ["Earth", "Mars", "Jupiter"], answer: "Jupiter" },
     { id: 13, q: "Which is database?", options: ["MySQL", "React", "Node"], answer: "MySQL" },
@@ -40,7 +38,6 @@ function OnlineTest() {
     }
 
     let score = 0;
-
     questions.forEach((q) => {
       if (answers[q.id] === q.answer) score++;
     });
@@ -51,21 +48,13 @@ function OnlineTest() {
       await axios.post(
         "http://localhost:8080/api/applications/submit-test",
         null,
-        {
-          params: {
-            applicationId: applicationId,
-            score: score,
-          },
-        }
+        { params: { applicationId, score } }
       );
 
       alert(`Test Submitted Successfully!\nScore: ${score}/15`);
-
-     
       navigate("/candidate/dashboard");
 
     } catch (error) {
-      console.error(error);
       alert("Error submitting test");
     } finally {
       setSubmitting(false);
@@ -73,44 +62,30 @@ function OnlineTest() {
   };
 
   return (
-    <div style={{ padding: "30px", fontFamily: "Arial" }}>
-      <h1>Online Test</h1>
+    <div style={{ maxWidth: "700px", margin: "auto", padding: "20px" }}>
+
+      <h2 style={{ marginBottom: "20px" }}>Online Test</h2>
 
       {questions.map((q) => (
-        <div
-          key={q.id}
-          style={{
-            marginBottom: "20px",
-            padding: "15px",
-            border: "1px solid #ddd",
-            borderRadius: "8px"
-          }}
-        >
-          <p><strong>{q.id}. {q.q}</strong></p>
+        <div key={q.id} style={{ marginBottom: "18px" }}>
+
+          <p><b>{q.id}. {q.q}</b></p>
 
           {q.options.map((opt) => (
-            <button
-              key={opt}
-              onClick={() =>
-                setAnswers({ ...answers, [q.id]: opt })
-              }
-              style={{
-                marginRight: "10px",
-                marginTop: "8px",
-                padding: "8px 12px",
-                borderRadius: "5px",
-                border: answers[q.id] === opt
-                  ? "2px solid green"
-                  : "1px solid #ccc",
-                background: answers[q.id] === opt
-                  ? "#d4edda"
-                  : "white",
-                cursor: "pointer"
-              }}
-            >
-              {opt}
-            </button>
+            <label key={opt} style={{ display: "block", marginBottom: "5px" }}>
+              <input
+                type="radio"
+                name={`q-${q.id}`}
+                value={opt}
+                checked={answers[q.id] === opt}
+                onChange={() =>
+                  setAnswers({ ...answers, [q.id]: opt })
+                }
+              />
+              {" "}{opt}
+            </label>
           ))}
+
         </div>
       ))}
 
@@ -118,16 +93,18 @@ function OnlineTest() {
         onClick={submitTest}
         disabled={submitting}
         style={{
-          padding: "10px 20px",
-          background: submitting ? "gray" : "blue",
-          color: "white",
+          marginTop: "20px",
+          padding: "10px 18px",
+          background: submitting ? "#888" : "#000",
+          color: "#fff",
           border: "none",
-          borderRadius: "5px",
-          cursor: submitting ? "not-allowed" : "pointer"
+          borderRadius: "4px",
+          cursor: "pointer"
         }}
       >
         {submitting ? "Submitting..." : "Submit Test"}
       </button>
+
     </div>
   );
 }
