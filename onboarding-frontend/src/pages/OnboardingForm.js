@@ -28,10 +28,10 @@ function OnboardingForm() {
     try {
       await axios.post("http://localhost:8080/api/onboarding", {
         ...formData,
-        email: user.email  // ⭐ IMPORTANT
+        email: user.email  
       });
 
-      alert("Onboarding submitted successfully ✅");
+      alert("Onboarding submitted successfully ");
       navigate("/candidate/dashboard");
 
     } catch (err) {

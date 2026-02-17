@@ -1,5 +1,4 @@
 package com.onboard.onboarding.controllers;
-
 import com.onboard.onboarding.entities.Application;
 import com.onboard.onboarding.entities.Test;
 import com.onboard.onboarding.services.CandidateService;

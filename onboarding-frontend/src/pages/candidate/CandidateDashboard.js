@@ -7,11 +7,9 @@ function CandidateDashboard() {
 
   const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
-
   const [internships, setInternships] = useState([]);
   const [applications, setApplications] = useState([]);
   const [selectedInternship, setSelectedInternship] = useState(null);
-
   const [candidateName, setCandidateName] = useState("");
   const [phone, setPhone] = useState("");
   const [degree, setDegree] = useState("");
@@ -19,14 +17,17 @@ function CandidateDashboard() {
   const [cgpa, setCgpa] = useState("");
   const [skills, setSkills] = useState("");
   const [resume, setResume] = useState(null);
-
   const [signedFiles, setSignedFiles] = useState({});
   const [onboardingStatus, setOnboardingStatus] = useState(null);
+  const [latestSignedOfferId, setLatestSignedOfferId] = useState(null);
+  //const [onboardingCount, setOnboardingCount] = useState(0);
+
+
 
 
  useEffect(() => {
 
-  if (!user?.email) return;   // ⭐ WAIT until user.id exists
+  if (!user?.email) return;   
 
   fetchInternships();
   fetchApplications();
@@ -43,7 +44,6 @@ function CandidateDashboard() {
 
 
 const fetchOnboarding = async () => {
-
   if (!user?.email) return;
 
   try {
@@ -51,16 +51,12 @@ const fetchOnboarding = async () => {
       `http://localhost:8080/api/onboarding/candidate?email=${user.email}`
     );
 
-    console.log("ONBOARDING DATA:", res.data);
-
-   if (res.data.length > 0) {
-
-  const latest = res.data[res.data.length - 1]; // get newest entry
-  setOnboardingStatus(latest.status);
-
-} else {
-  setOnboardingStatus(null);
-}
+    if (res.data.length > 0) {
+      const latest = res.data[res.data.length - 1];
+      setOnboardingStatus(latest.status);
+    } else {
+      setOnboardingStatus(null);
+    }
 
   } catch (err) {
     console.log(err);
@@ -69,20 +65,29 @@ const fetchOnboarding = async () => {
 
 
 
-  const fetchInternships = async () => {
+
+ const fetchInternships = async () => {
     const res = await axios.get("http://localhost:8080/api/internships");
     setInternships(res.data);
   };
 
-  const fetchApplications = async () => {
-    const res = await axios.get("http://localhost:8080/api/applications");
+ const fetchApplications = async () => {
+  const res = await axios.get("http://localhost:8080/api/applications");
 
-    const filtered = res.data.filter(
-      (app) => app.email === user.email
-    );
+  const filtered = res.data.filter(
+    (app) => app.email === user.email
+  );
 
-    setApplications(filtered);
-  };
+  setApplications(filtered);
+
+  const signed = filtered
+    .filter(app => app.signedOfferLetter)
+    .slice(-1)[0];
+
+  setLatestSignedOfferId(signed?.id || null);
+ 
+
+};
 
   const formatDate = (dateString) =>
     dateString &&
@@ -388,22 +393,23 @@ const fetchOnboarding = async () => {
   <>
     <p style={{ color: "black" }}>Offer Process-Completed</p>
 
-    {!onboardingStatus && (
-      <button
-        onClick={() => navigate("/onboarding")}
-        style={{
-          marginTop: "10px",
-          padding: "8px 14px",
-          background: "#111827",
-          color: "white",
-          border: "none",
-          borderRadius: "6px",
-          cursor: "pointer"
-        }}
-      >
-        Fill Onboarding Form
-      </button>
-    )}
+    {(onboardingStatus === null || onboardingStatus === "REJECTED") && (
+  <button
+    onClick={() => navigate("/onboarding")}
+    style={{
+      marginTop: "10px",
+      padding: "8px 14px",
+      background: "#111827",
+      color: "white",
+      border: "none",
+      borderRadius: "6px",
+      cursor: "pointer"
+    }}
+  >
+    Fill Onboarding Form
+  </button>
+)}
+
 
     {onboardingStatus === "PENDING" && (
       <p style={{ color: "orange", marginTop: "10px" }}>
@@ -413,13 +419,13 @@ const fetchOnboarding = async () => {
 
     {onboardingStatus === "VERIFIED" && (
       <p style={{ color: "green", marginTop: "10px" }}>
-        Onboarding verified ✅
+        Onboarding verified 
       </p>
     )}
 
     {onboardingStatus === "REJECTED" && (
       <p style={{ color: "red", marginTop: "10px" }}>
-        Onboarding rejected ❌
+        Onboarding rejected 
       </p>
     )}
   </>

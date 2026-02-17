@@ -423,66 +423,57 @@ function HrDashboard() {
     </a>
   </div>
 )}
-
-
-
 {app.signedOfferLetter && (() => {
 
   const record = onboardingList
     .filter(ob => ob.email === app.email)
     .slice(-1)[0];
 
-  if (!record) {
-    return (
-      <p style={{ color: "orange", fontWeight: 600 }}>
-        Waiting for candidate to submit onboarding
+  return (
+    <div style={{ marginTop: "10px" }}>
+
+      <p>
+        <b>Onboarding Status:</b>{" "}
+        <span style={{
+          fontWeight: 600,
+          color:
+            !record
+              ? "#9ca3af"
+              : record.status === "VERIFIED"
+              ? "green"
+              : record.status === "REJECTED"
+              ? "red"
+              : "orange"
+        }}>
+          {!record ? "NOT SUBMITTED" : record.status}
+        </span>
       </p>
-    );
-  }
 
-  if (record.status === "PENDING") {
-    return (
-      <div style={{ marginTop: "10px" }}>
-        <p style={{ fontWeight: 600 }}>Onboarding Details</p>
+      {record && (
+  <button
+    onClick={() => navigate(`/hr/onboarding/${app.email}`)}
+    style={{
+      padding: "6px 12px",
+      background: "black",
+      color: "white",
+      border: "none",
+      borderRadius: "6px",
+      cursor: "pointer"
+    }}
+  >
+    View Onboarding Details
+  </button>
+)}
 
-        <p><b>Address:</b> {record.address}</p>
-        <p><b>Aadhaar:</b> {record.aadhaar}</p>
-        <p><b>PAN:</b> {record.pan}</p>
-        <p><b>Bank:</b> {record.bankAccount}</p>
 
-        <button
-          onClick={() => updateOnboardingStatus(record.id, "VERIFIED")}
-          style={{ marginRight: "10px" }}
-        >
-          Verify
-        </button>
-
-        <button
-          onClick={() => updateOnboardingStatus(record.id, "REJECTED")}
-        >
-          Reject
-        </button>
-      </div>
-    );
-  }
-
-  if (record.status === "VERIFIED") {
-    return (
-      <p style={{ color: "green", fontWeight: 600 }}>
-        Onboarding Completed ✅
-      </p>
-    );
-  }
-
-  if (record.status === "REJECTED") {
-    return (
-      <p style={{ color: "red", fontWeight: 600 }}>
-        Waiting for candidate to resubmit onboarding
-      </p>
-    );
-  }
+    </div>
+  );
 
 })()}
+
+
+
+
 
 
             </div>

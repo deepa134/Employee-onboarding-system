@@ -5,6 +5,8 @@ import OnlineTest from "./pages/candidate/OnlineTest";
 import InterviewerDashboard from "./pages/interviewer/InterviewerDashboard";
 import Login from "./pages/Login";
 import OnboardingForm from "./pages/OnboardingForm";
+import HrOnboardingDetails from "./pages/hr/HrOnboardingDetails";
+
 
 
 function App() {
@@ -17,6 +19,8 @@ function App() {
         <Route path="/candidate/test/:applicationId" element={<OnlineTest />} />
         <Route path="/interviewer/:id" element={<InterviewerDashboard />} />
         <Route path="/onboarding" element={<OnboardingForm />} />
+        <Route path="/hr/onboarding/:email" element={<HrOnboardingDetails />} />
+
 
       </Routes>
     </BrowserRouter>
