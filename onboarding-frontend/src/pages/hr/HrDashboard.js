@@ -23,6 +23,8 @@ function HrDashboard() {
   const [pdfFile, setPdfFile] = useState(null);
   const [uploadedFileName, setUploadedFileName] = useState("");
   const [pdfUploaded, setPdfUploaded] = useState(false);
+  const [onboardingList, setOnboardingList] = useState([]);
+
 
   const fileInputRef = useRef(null);
 
@@ -35,10 +37,14 @@ function HrDashboard() {
 
     fetchInternships();
     fetchApplications();
+    fetchOnboarding();
+
 
     const interval = setInterval(() => {
       fetchInternships();
       fetchApplications();
+      fetchOnboarding();
+
     }, 5000);
 
     return () => clearInterval(interval);
@@ -63,6 +69,11 @@ function HrDashboard() {
 
   const getInterviewerName = (id) =>
     id === 1 ? "Kavya" : id === 2 ? "Arun" : id === 3 ? "Divya" : "";
+  const fetchOnboarding = async () => {
+  const res = await axios.get("http://localhost:8080/api/onboarding");
+  setOnboardingList(res.data);
+};
+
 
   const fetchInternships = async () => {
     try {
@@ -102,6 +113,15 @@ function HrDashboard() {
 
     fetchApplications();
   };
+  const updateOnboardingStatus = async (id, status) => {
+
+  await axios.put(
+    `http://localhost:8080/api/onboarding/update/${id}/${status}`
+  );
+
+  fetchOnboarding();
+};
+
 
   const handlePdfUpload = async () => {
     if (!pdfFile) return alert("Select PDF");
@@ -113,6 +133,7 @@ function HrDashboard() {
       "http://localhost:8080/api/internships/upload-pdf",
       formData
     );
+    
 
     setUploadedFileName(res.data);
     setPdfUploaded(true);
@@ -384,24 +405,85 @@ function HrDashboard() {
      Offer Letter-- Sent
   </p>
 )}
+              
               {app.signedOfferLetter && (
   <p style={{ color: "#16a34a", fontWeight: 600 }}>
     Offer Process — Completed
   </p>
 )}
 
-              {app.signedOfferLetter && (
-                <div>
-                  
-                  <a
-                    href={`http://localhost:8080/signed-offers/${app.signedOfferLetter}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    View Signed Offer Letter
-                  </a>
-                </div>
-              )}
+{app.signedOfferLetter && (
+  <div>
+    <a
+      href={`http://localhost:8080/signed-offers/${app.signedOfferLetter}`}
+      target="_blank"
+      rel="noreferrer"
+    >
+      View Signed Offer Letter
+    </a>
+  </div>
+)}
+
+
+
+{app.signedOfferLetter && (() => {
+
+  const record = onboardingList
+    .filter(ob => ob.email === app.email)
+    .slice(-1)[0];
+
+  if (!record) {
+    return (
+      <p style={{ color: "orange", fontWeight: 600 }}>
+        Waiting for candidate to submit onboarding
+      </p>
+    );
+  }
+
+  if (record.status === "PENDING") {
+    return (
+      <div style={{ marginTop: "10px" }}>
+        <p style={{ fontWeight: 600 }}>Onboarding Details</p>
+
+        <p><b>Address:</b> {record.address}</p>
+        <p><b>Aadhaar:</b> {record.aadhaar}</p>
+        <p><b>PAN:</b> {record.pan}</p>
+        <p><b>Bank:</b> {record.bankAccount}</p>
+
+        <button
+          onClick={() => updateOnboardingStatus(record.id, "VERIFIED")}
+          style={{ marginRight: "10px" }}
+        >
+          Verify
+        </button>
+
+        <button
+          onClick={() => updateOnboardingStatus(record.id, "REJECTED")}
+        >
+          Reject
+        </button>
+      </div>
+    );
+  }
+
+  if (record.status === "VERIFIED") {
+    return (
+      <p style={{ color: "green", fontWeight: 600 }}>
+        Onboarding Completed ✅
+      </p>
+    );
+  }
+
+  if (record.status === "REJECTED") {
+    return (
+      <p style={{ color: "red", fontWeight: 600 }}>
+        Waiting for candidate to resubmit onboarding
+      </p>
+    );
+  }
+
+})()}
+
 
             </div>
             {app.interviewStatus === "HR_SCHEDULED" &&

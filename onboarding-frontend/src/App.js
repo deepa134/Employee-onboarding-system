@@ -4,6 +4,8 @@ import CandidateDashboard from "./pages/candidate/CandidateDashboard";
 import OnlineTest from "./pages/candidate/OnlineTest";
 import InterviewerDashboard from "./pages/interviewer/InterviewerDashboard";
 import Login from "./pages/Login";
+import OnboardingForm from "./pages/OnboardingForm";
+
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
         <Route path="/candidate/dashboard" element={<CandidateDashboard />} />
         <Route path="/candidate/test/:applicationId" element={<OnlineTest />} />
         <Route path="/interviewer/:id" element={<InterviewerDashboard />} />
+        <Route path="/onboarding" element={<OnboardingForm />} />
+
       </Routes>
     </BrowserRouter>
   );
