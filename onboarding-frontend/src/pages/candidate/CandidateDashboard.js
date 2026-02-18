@@ -21,6 +21,7 @@ function CandidateDashboard() {
   const [onboardingStatus, setOnboardingStatus] = useState(null);
   const [latestSignedOfferId, setLatestSignedOfferId] = useState(null);
   //const [onboardingCount, setOnboardingCount] = useState(0);
+  const [employee, setEmployee] = useState(null);
 
 
 
@@ -32,23 +33,28 @@ function CandidateDashboard() {
   fetchInternships();
   fetchApplications();
   fetchOnboarding();
+  fetchEmployee();
 
   const interval = setInterval(() => {
     fetchApplications();
     fetchOnboarding();
+    
   }, 5000);
 
   return () => clearInterval(interval);
 
-}, [user?.email]);
-
+}, [user?.email,latestSignedOfferId]);
 
 const fetchOnboarding = async () => {
-  if (!user?.email) return;
+
+  if (!latestSignedOfferId) {
+    setOnboardingStatus(null);
+    return;
+  }
 
   try {
     const res = await axios.get(
-      `http://localhost:8080/api/onboarding/candidate?email=${user.email}`
+      `http://localhost:8080/api/onboarding/application/${latestSignedOfferId}`
     );
 
     if (res.data.length > 0) {
@@ -60,9 +66,24 @@ const fetchOnboarding = async () => {
 
   } catch (err) {
     console.log(err);
+    setOnboardingStatus(null);
   }
 };
 
+
+const fetchEmployee = async () => {
+  if (!user?.email) return;
+
+  try {
+    const res = await axios.get(
+      `http://localhost:8080/api/employees/${user.email}`
+    );
+
+    setEmployee(res.data);
+  } catch (err) {
+    setEmployee(null); 
+  }
+};
 
 
 
@@ -217,7 +238,7 @@ const fetchOnboarding = async () => {
           </h3>
 
           <p><b>Role:</b>{i.title}</p>
-          <p><b>Location:</b> {i.location}</p>
+          <p><b>Location:</b> {i.workLocation}</p>
           <p><b>CTC:</b> {i.ctc}</p>
           <p><b>Description:</b> {i.description}</p>
 
@@ -389,47 +410,77 @@ const fetchOnboarding = async () => {
                   </>
                 )}
 
-               {app.signedOfferLetter && (
+              {app.signedOfferLetter && (
   <>
-    <p style={{ color: "black" }}>Offer Process-Completed</p>
 
-    {(onboardingStatus === null || onboardingStatus === "REJECTED") && (
-  <button
-    onClick={() => navigate("/onboarding")}
-    style={{
-      marginTop: "10px",
-      padding: "8px 14px",
-      background: "#111827",
-      color: "white",
-      border: "none",
-      borderRadius: "6px",
-      cursor: "pointer"
-    }}
-  >
-    Fill Onboarding Form
-  </button>
-)}
+    {employee && (
+      <div
+        style={{
+          marginTop: "15px",
+          padding: "15px",
+          border: "1px solid white",
+          borderRadius: "8px",
+          background: "white"
+        }}
+      >
+        <h3 style={{ color: "#16a34a" }}> Welcome to the Company</h3>
 
-
-    {onboardingStatus === "PENDING" && (
-      <p style={{ color: "orange", marginTop: "10px" }}>
-        Onboarding submitted – waiting for HR verification
-      </p>
+        <p><b>Employee ID:</b> {employee.employeeId}</p>
+        <p><b>Date of Joining:</b> {employee.dateOfJoining}</p>
+        <p><b>Reporting Time:</b> {employee.reportingTime}</p>
+        <p><b>Location:</b> {employee.workLocation}</p>
+        <p><b>Manager:</b> {employee.managerName}</p>
+        <p><b>Manager Email:</b> {employee.managerEmail}</p>
+        <p><b>Manager Contact:</b> {employee.managerContact}</p>
+      </div>
     )}
 
-    {onboardingStatus === "VERIFIED" && (
-      <p style={{ color: "green", marginTop: "10px" }}>
-        Onboarding verified 
-      </p>
+    {!employee && (
+      <>
+        <p style={{ color: "black" }}>Offer Process-Completed</p>
+
+        {(onboardingStatus === null || onboardingStatus === "REJECTED") && (
+          <button
+            onClick={() => navigate("/onboarding",{
+              state:{applicationId:app.id}
+            })}
+            style={{
+              marginTop: "10px",
+              padding: "8px 14px",
+              background: "#111827",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer"
+            }}
+          >
+            Fill Onboarding Form
+          </button>
+        )}
+
+        {onboardingStatus === "PENDING" && (
+          <p style={{ color: "orange", marginTop: "10px" }}>
+            Onboarding submitted – waiting for HR verification
+          </p>
+        )}
+
+        {onboardingStatus === "VERIFIED" && (
+          <p style={{ color: "green", marginTop: "10px" }}>
+            Onboarding verified
+          </p>
+        )}
+
+        {onboardingStatus === "REJECTED" && (
+          <p style={{ color: "red", marginTop: "10px" }}>
+            Onboarding rejected
+          </p>
+        )}
+      </>
     )}
 
-    {onboardingStatus === "REJECTED" && (
-      <p style={{ color: "red", marginTop: "10px" }}>
-        Onboarding rejected 
-      </p>
-    )}
   </>
 )}
+
 
 
               </div>

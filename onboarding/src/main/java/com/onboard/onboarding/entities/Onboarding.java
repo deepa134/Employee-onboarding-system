@@ -15,4 +15,6 @@ public class Onboarding {
     private String bankAccount;
     private String email;
     private String status; 
+    private Long applicationId;
+
 }

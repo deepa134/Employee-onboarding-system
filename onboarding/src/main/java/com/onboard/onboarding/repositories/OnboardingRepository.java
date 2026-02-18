@@ -7,5 +7,9 @@ import java.util.List;
 
 public interface OnboardingRepository extends JpaRepository<Onboarding, Long> {
 
-    List<Onboarding>  findByEmail (String email);
+    
+    List<Onboarding> findByEmail(String email);
+
+    
+    List<Onboarding> findByApplicationId(Long applicationId);
 }

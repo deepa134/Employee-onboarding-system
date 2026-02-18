@@ -6,6 +6,8 @@ import InterviewerDashboard from "./pages/interviewer/InterviewerDashboard";
 import Login from "./pages/Login";
 import OnboardingForm from "./pages/OnboardingForm";
 import HrOnboardingDetails from "./pages/hr/HrOnboardingDetails";
+import HrCreateEmployee from "./pages/hr/HrCreateEmployee";
+import HrEmployeeDetails from "./pages/hr/HrEmployeeDetails";
 
 
 
@@ -20,6 +22,9 @@ function App() {
         <Route path="/interviewer/:id" element={<InterviewerDashboard />} />
         <Route path="/onboarding" element={<OnboardingForm />} />
         <Route path="/hr/onboarding/:email" element={<HrOnboardingDetails />} />
+        <Route path="/hr/create-employee/:email" element={<HrCreateEmployee />} />
+        <Route path="/hr/employee/:email" element={<HrEmployeeDetails />} />
+
 
 
       </Routes>

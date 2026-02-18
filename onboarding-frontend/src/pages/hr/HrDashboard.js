@@ -24,6 +24,8 @@ function HrDashboard() {
   const [uploadedFileName, setUploadedFileName] = useState("");
   const [pdfUploaded, setPdfUploaded] = useState(false);
   const [onboardingList, setOnboardingList] = useState([]);
+  const [employeeList, setEmployeeList] = useState([]);
+
 
 
   const fileInputRef = useRef(null);
@@ -38,12 +40,14 @@ function HrDashboard() {
     fetchInternships();
     fetchApplications();
     fetchOnboarding();
+    fetchEmployees();
 
 
     const interval = setInterval(() => {
       fetchInternships();
       fetchApplications();
       fetchOnboarding();
+      fetchEmployees();
 
     }, 5000);
 
@@ -120,6 +124,8 @@ function HrDashboard() {
   );
 
   fetchOnboarding();
+ ;
+
 };
 
 
@@ -166,6 +172,7 @@ function HrDashboard() {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+     
 
     fetchInternships();
   };
@@ -209,7 +216,13 @@ function HrDashboard() {
     );
 
     fetchApplications();
+   
+
   };
+   const fetchEmployees = async () => {
+  const res = await axios.get("http://localhost:8080/api/employees");
+  setEmployeeList(res.data);
+};
 
   const updateHrResult = async (id, result) => {
     await axios.post(
@@ -426,7 +439,7 @@ function HrDashboard() {
 {app.signedOfferLetter && (() => {
 
   const record = onboardingList
-    .filter(ob => ob.email === app.email)
+    .filter(ob => ob.applicationId=== app.id)
     .slice(-1)[0];
 
   return (
@@ -450,20 +463,75 @@ function HrDashboard() {
       </p>
 
       {record && (
-  <button
-    onClick={() => navigate(`/hr/onboarding/${app.email}`)}
-    style={{
-      padding: "6px 12px",
-      background: "black",
-      color: "white",
-      border: "none",
-      borderRadius: "6px",
-      cursor: "pointer"
-    }}
-  >
-    View Onboarding Details
-  </button>
+  <>
+    <button
+      onClick={() => navigate(`/hr/onboarding/${app.email}`)}
+      style={{
+        padding: "6px 12px",
+        background: "black",
+        color: "white",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer",
+        marginRight: "10px"
+      }}
+    >
+      View Onboarding Details
+    </button>
+
+    {record.status === "VERIFIED" && (() => {
+
+  const employee = employeeList.find(
+    emp => emp.email === app.email
+  );
+
+  return (
+    <>
+      {!employee && (
+        <button
+          onClick={() => navigate(`/hr/create-employee/${app.email}`)}
+          style={{
+            padding: "6px 12px",
+            background: "#16a34a",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer"
+          }}
+        >
+          Create Employee Profile
+        </button>
+      )}
+
+      {employee && (
+        <>
+          <p style={{ color: "#16a34a", fontWeight: 600 }}>
+            Employee Profile Created Successfully ✅
+          </p>
+
+          <button
+            onClick={() => navigate(`/hr/employee/${app.email}`)}
+            style={{
+              padding: "6px 12px",
+              background: "black",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer"
+            }}
+          >
+            View Employee Details
+          </button>
+        </>
+      )}
+    </>
+  );
+
+})()}
+
+  </>
 )}
+
 
 
     </div>
