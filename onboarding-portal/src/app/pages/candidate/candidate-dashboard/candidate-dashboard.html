@@ -1,0 +1,105 @@
+<div style="padding:30px">
+
+  <h2>Candidate Dashboard</h2>
+  <p style="color:gray">{{user?.email}}</p>
+
+  <button type="button" (click)="logout()">Logout</button>
+
+  <hr>
+
+  <!-- ================= AVAILABLE INTERNSHIPS ================= -->
+
+  <h3>Available Internships</h3>
+
+  <div *ngFor="let i of internships" class="card">
+
+    <h4 style="text-align:center">{{i.companyName}}</h4>
+
+    <p><b>Role:</b> {{i.title}}</p>
+    <p><b>Location:</b> {{i.location}}</p>
+    <p><b>CTC:</b> {{i.ctc}}</p>
+    <p>{{i.description}}</p>
+
+    <button *ngIf="!hasApplied(i.id)"
+            type="button"
+            (click)="selectedInternship = i">
+      Apply
+    </button>
+
+    <button *ngIf="hasApplied(i.id)" disabled>
+      Applied
+    </button>
+
+  </div>
+
+  <!-- ================= APPLY FORM ================= -->
+
+  <div *ngIf="selectedInternship" class="card">
+
+    <h3>Apply for {{selectedInternship.title}}</h3>
+
+    <input placeholder="Full Name" [(ngModel)]="candidateName">
+    <input placeholder="Phone" [(ngModel)]="phone">
+    <input placeholder="Degree" [(ngModel)]="degree">
+    <input placeholder="College" [(ngModel)]="college">
+    <input placeholder="CGPA" [(ngModel)]="cgpa">
+    <input placeholder="Skills" [(ngModel)]="skills">
+
+    <input id="resumeInput" type="file" (change)="onFileSelect($event)">
+
+    <button type="button" (click)="handleApply()">
+      Submit Application
+    </button>
+
+  </div>
+
+  <hr>
+
+  <!-- ================= MY APPLICATIONS ================= -->
+
+  <h3>My Applications</h3>
+
+  <div *ngFor="let app of applications" class="card">
+
+    <ng-container *ngIf="getInternship(app.internshipId) as internship">
+
+      <h4 style="text-align:center">
+        {{internship.companyName}}
+      </h4>
+
+      <h4>{{internship.title}}</h4>
+
+    </ng-container>
+
+    <p><b>Name:</b> {{app.candidateName}}</p>
+
+    <!-- TEST ACTIVE -->
+
+    <div *ngIf="app.status === 'TEST_ACTIVE'">
+
+      <p>
+        Test active till
+        {{formatDate(app.testDate)}}
+      </p>
+
+      <button type="button" (click)="goToTest(app.id)">
+        Take Test
+      </button>
+
+    </div>
+
+    <!-- TEST PASSED -->
+
+    <p *ngIf="app.status === 'TEST_PASSED'" style="color:green">
+      Online Test – Passed
+    </p>
+
+    <!-- TEST FAILED -->
+
+    <p *ngIf="app.status === 'TEST_FAILED'" style="color:red">
+      Online Test – Not Cleared
+    </p>
+
+  </div>
+
+</div>

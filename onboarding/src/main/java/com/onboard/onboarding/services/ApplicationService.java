@@ -1,10 +1,8 @@
 package com.onboard.onboarding.services;
-
 import com.onboard.onboarding.entities.Application;
 import com.onboard.onboarding.repositories.ApplicationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -103,7 +101,6 @@ public class ApplicationService {
         applicationRepository.save(app);
 
         String subject = level + " Interview Scheduled";
-
         String body = "Dear " + app.getCandidateName() + ",\n\n" +
                 "Your " + level + " interview has been scheduled.\n\n" +
                 "Date: " + date + "\n" +
@@ -133,7 +130,6 @@ public class ApplicationService {
         return applicationRepository.save(app);
     }
 
-   
     public Application updateInterviewResult(Long applicationId, String result) {
 
         Application app = applicationRepository.findById(applicationId)

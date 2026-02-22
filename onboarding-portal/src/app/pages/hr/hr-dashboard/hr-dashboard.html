@@ -1,0 +1,54 @@
+<div style="padding:30px">
+
+  <h2>HR Dashboard</h2>
+
+  <button type="button" (click)="logout()">Logout</button>
+
+  <h3>Post New Internship</h3>
+
+  <input placeholder="Company Name" [(ngModel)]="companyName">
+  <input placeholder="Title" [(ngModel)]="title">
+  <input placeholder="Location" [(ngModel)]="location">
+  <input placeholder="CTC" [(ngModel)]="ctc">
+
+  <textarea placeholder="Description" [(ngModel)]="description"></textarea>
+
+  <br><br>
+
+  <input id="pdfInput" type="file" (change)="onFileSelect($event)">
+
+  <br><br>
+
+  <button type="button"
+          (click)="uploadPdf()"
+          [disabled]="pdfUploading">
+
+    {{ pdfUploading ? 'Uploading...' : 'Upload PDF' }}
+
+  </button>
+
+  <button type="button"
+          (click)="postInternship()"
+          [disabled]="posting || !uploadedFileName">
+
+    {{ posting ? 'Posting...' : 'Post Internship' }}
+
+  </button>
+
+  <hr>
+
+  <h3>Posted Internships</h3>
+
+  <div *ngFor="let i of internships">
+
+    <h4>{{i.title}}</h4>
+    <p>{{i.companyName}}</p>
+    <p>{{i.location}}</p>
+
+    <button type="button" (click)="deleteInternship(i.id)">
+      Delete
+    </button>
+
+  </div>
+
+</div>

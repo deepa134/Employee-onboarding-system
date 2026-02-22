@@ -1,12 +1,10 @@
 package com.onboard.onboarding.services;
-
 import com.onboard.onboarding.entities.Employee;
 import com.onboard.onboarding.repositories.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -16,14 +14,12 @@ public class EmployeeService {
     private final EmployeeRepository repo;
     private final JavaMailSender mailSender;
 
-    // ✅ CREATE EMPLOYEE
+  
     public Employee save(Employee emp) {
-
-    // 🔥 check if employee already exists
     Employee existing = repo.findTopByEmailOrderByIdDesc(emp.getEmail());
 
     if (existing != null) {
-        return existing;   // already created → do not create again
+        return existing;   
     }
 
     emp.setEmployeeId("EMP" + System.currentTimeMillis());
@@ -41,17 +37,16 @@ public class EmployeeService {
 }
 
 
-    // ✅ GET ALL EMPLOYEES (used in HR dashboard)
     public List<Employee> getAll() {
         return repo.findAll();
     }
 
-    // ✅ GET EMPLOYEE BY EMAIL
+   
     public Employee getByEmail(String email) {
         return repo.findTopByEmailOrderByIdDesc(email);
     }
 
-    // ✅ SEND WELCOME MAIL
+   
     private void sendJoiningMail(Employee emp) {
 
         SimpleMailMessage message = new SimpleMailMessage();

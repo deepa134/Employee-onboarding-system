@@ -1,5 +1,4 @@
 package com.onboard.onboarding.entities;
-
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -21,17 +20,13 @@ public class Employee {
     private String workLocation;
     private String workMode;
     private String employmentType;
-
     private String dateOfJoining;
     private String reportingTime;
-
     private String managerName;
     private String managerEmail;
     private String managerContact;
 
     private String accommodation;
-
     private String officialEmail;
-
     private String status;
 }

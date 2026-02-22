@@ -10,40 +10,41 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/internships")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:4200")
 public class InternshipController {
 
     private final InternshipService internshipService;
 
   
-    @PostMapping(value = "/upload-pdf", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> uploadPdf(@RequestParam("file") MultipartFile file) {
+   @PostMapping(value = "/upload-pdf", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+public ResponseEntity<Map<String, String>> uploadPdf(@RequestParam("file") MultipartFile file) {
+    try {
+        String uploadDir = System.getProperty("user.dir") + File.separator + "uploads";
+        File directory = new File(uploadDir);
 
-        try {
-            String uploadDir = System.getProperty("user.dir") + File.separator + "uploads";
-            File directory = new File(uploadDir);
-
-            if (!directory.exists()) {
-                directory.mkdirs();
-            }
-
-           
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            String filePath = uploadDir + File.separator + fileName;
-
-            file.transferTo(new File(filePath));
-
-            return ResponseEntity.ok(fileName);  
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body("PDF Upload Failed");
+        if (!directory.exists()) {
+            directory.mkdirs();
         }
+
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String filePath = uploadDir + File.separator + fileName;
+
+        file.transferTo(new File(filePath));
+
+        // ✅ Return JSON
+        return ResponseEntity.ok(Map.of("filename", fileName));
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.internalServerError().body(Map.of("error", "PDF Upload Failed"));
     }
+}
+
 
     @PostMapping("/post")
     public Internship postInternship(
@@ -74,10 +75,11 @@ public class InternshipController {
     public Internship closeInternship(@PathVariable Long id) {
         return internshipService.closeInternship(id);
     }
-
     @DeleteMapping("/{id}")
-    public String deleteInternship(@PathVariable Long id) {
-        internshipService.deleteInternship(id);
-        return "Internship deleted successfully";
-    }
+public ResponseEntity<Map<String, String>> deleteInternship(@PathVariable Long id) {
+    internshipService.deleteInternship(id);
+    return ResponseEntity.ok(Map.of("message", "Internship deleted successfully"));
+}
+
+    
 }

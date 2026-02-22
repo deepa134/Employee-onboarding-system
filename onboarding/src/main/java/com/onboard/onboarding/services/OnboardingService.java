@@ -1,5 +1,4 @@
 package com.onboard.onboarding.services;
-
 import com.onboard.onboarding.entities.Onboarding;
 import com.onboard.onboarding.repositories.OnboardingRepository;
 import org.springframework.stereotype.Service;
@@ -14,8 +13,6 @@ public class OnboardingService {
     public OnboardingService(OnboardingRepository repo) {
         this.repo = repo;
     }
-
-   
     public Onboarding save(Onboarding onboarding) {
 
         
@@ -24,7 +21,6 @@ public class OnboardingService {
         return repo.save(onboarding);
     }
 
-    
     public List<Onboarding> getByEmail(String email) {
         return repo.findByEmail(email);
     }

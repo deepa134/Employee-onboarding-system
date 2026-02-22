@@ -1,5 +1,4 @@
 package com.onboard.onboarding.services;
-
 import com.onboard.onboarding.entities.Internship;
 import com.onboard.onboarding.entities.InternshipStatus;
 import com.onboard.onboarding.repositories.InternshipRepository;

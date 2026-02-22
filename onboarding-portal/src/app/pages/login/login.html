@@ -1,0 +1,30 @@
+<div style="width:320px;margin:auto;margin-top:100px">
+
+  <h2>Employee Onboarding Portal</h2>
+
+  <button (click)="role='CANDIDATE'">Candidate</button>
+  <button (click)="role='HR'">HR</button>
+  <button (click)="role='INTERVIEWER'">Interviewer</button>
+
+  <div *ngIf="role==='CANDIDATE'">
+    <input [(ngModel)]="email" placeholder="Enter email">
+  </div>
+
+  <div *ngIf="role==='INTERVIEWER'">
+
+    <select [(ngModel)]="name">
+      <option value="">Select Interviewer</option>
+      <option>Kavya</option>
+      <option>Arun</option>
+      <option>Divya</option>
+    </select>
+
+    <input type="password" [(ngModel)]="password" placeholder="Enter password">
+
+  </div>
+
+  <br><br>
+
+  <button (click)="handleLogin()">Login</button>
+
+</div>

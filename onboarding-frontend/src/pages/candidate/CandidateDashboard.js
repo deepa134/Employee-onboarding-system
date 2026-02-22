@@ -1,570 +1,107 @@
-import { useState, useEffect, useContext } from "react";
-import axios from "axios";
+import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
+import "./CandidateDashboard.css";
 
 function CandidateDashboard() {
 
-  const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
-  const [internships, setInternships] = useState([]);
+  const navigate = useNavigate();
+
   const [applications, setApplications] = useState([]);
-  const [selectedInternship, setSelectedInternship] = useState(null);
-  const [candidateName, setCandidateName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [degree, setDegree] = useState("");
-  const [college, setCollege] = useState("");
-  const [cgpa, setCgpa] = useState("");
-  const [skills, setSkills] = useState("");
-  const [resume, setResume] = useState(null);
-  const [signedFiles, setSignedFiles] = useState({});
-  const [onboardingStatus, setOnboardingStatus] = useState(null);
-  const [latestSignedOfferId, setLatestSignedOfferId] = useState(null);
-  //const [onboardingCount, setOnboardingCount] = useState(0);
-  const [employee, setEmployee] = useState(null);
 
-
-
-
- useEffect(() => {
-
-  if (!user?.email) return;   
-
-  fetchInternships();
-  fetchApplications();
-  fetchOnboarding();
-  fetchEmployee();
-
-  const interval = setInterval(() => {
+  useEffect(() => {
     fetchApplications();
-    fetchOnboarding();
-    
-  }, 5000);
+  }, []);
 
-  return () => clearInterval(interval);
+  const fetchApplications = async () => {
+    const res = await axios.get("http://localhost:8080/api/applications");
 
-}, [user?.email,latestSignedOfferId]);
-
-const fetchOnboarding = async () => {
-
-  if (!latestSignedOfferId) {
-    setOnboardingStatus(null);
-    return;
-  }
-
-  try {
-    const res = await axios.get(
-      `http://localhost:8080/api/onboarding/application/${latestSignedOfferId}`
+    const filtered = res.data.filter(
+      (app) => app.email === user.email
     );
 
-    if (res.data.length > 0) {
-      const latest = res.data[res.data.length - 1];
-      setOnboardingStatus(latest.status);
-    } else {
-      setOnboardingStatus(null);
-    }
-
-  } catch (err) {
-    console.log(err);
-    setOnboardingStatus(null);
-  }
-};
-
-
-const fetchEmployee = async () => {
-  if (!user?.email) return;
-
-  try {
-    const res = await axios.get(
-      `http://localhost:8080/api/employees/${user.email}`
-    );
-
-    setEmployee(res.data);
-  } catch (err) {
-    setEmployee(null); 
-  }
-};
-
-
-
- const fetchInternships = async () => {
-    const res = await axios.get("http://localhost:8080/api/internships");
-    setInternships(res.data);
-  };
-
- const fetchApplications = async () => {
-  const res = await axios.get("http://localhost:8080/api/applications");
-
-  const filtered = res.data.filter(
-    (app) => app.email === user.email
-  );
-
-  setApplications(filtered);
-
-  const signed = filtered
-    .filter(app => app.signedOfferLetter)
-    .slice(-1)[0];
-
-  setLatestSignedOfferId(signed?.id || null);
- 
-
-};
-
-  const formatDate = (dateString) =>
-    dateString &&
-    new Date(dateString).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric"
-    });
-
-  const formatTime = (time) => {
-    if (!time) return "";
-    const [h, m] = time.split(":");
-    const d = new Date();
-    d.setHours(h, m);
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
-
-  const getInterviewerName = (id) => {
-    if (id === 1) return "Kavya";
-    if (id === 2) return "Arun";
-    if (id === 3) return "Divya";
-    return "";
-  };
-
-  const hasApplied = (internshipId) =>
-    applications.some((app) => app.internshipId === internshipId);
-
-  const handleApply = async () => {
-
-    if (!resume) return alert("Please upload resume");
-
-    const formData = new FormData();
-    formData.append("internshipId", selectedInternship.id);
-    formData.append("candidateName", candidateName);
-    formData.append("email", user.email);
-    formData.append("phone", phone);
-    formData.append("degree", degree);
-    formData.append("college", college);
-    formData.append("cgpa", cgpa);
-    formData.append("skills", skills);
-    formData.append("resume", resume);
-
-    await axios.post("http://localhost:8080/api/applications/apply", formData);
-
-    alert("Application submitted!");
-
-    setSelectedInternship(null);
-    setCandidateName("");
-    setPhone("");
-    setDegree("");
-    setCollege("");
-    setCgpa("");
-    setSkills("");
-    setResume(null);
-
-    fetchApplications();
-  };
-
-  const updateOfferStatus = async (id, status) => {
-    await axios.post(
-      "http://localhost:8080/api/applications/offer-status",
-      null,
-      { params: { applicationId: id, status } }
-    );
-    fetchApplications();
-  };
-
-  const handleSignedFileChange = (id, file) => {
-    setSignedFiles({ ...signedFiles, [id]: file });
-  };
-
-  const uploadSignedOffer = async (id) => {
-
-    const file = signedFiles[id];
-    if (!file) return alert("Upload signed offer");
-
-    const formData = new FormData();
-    formData.append("applicationId", id);
-    formData.append("file", file);
-
-    await axios.post(
-      "http://localhost:8080/api/applications/upload-signed-offer",
-      formData
-    );
-
-    alert("Signed offer uploaded");
-
-    setSignedFiles({ ...signedFiles, [id]: null });
-
-    fetchApplications();
+    setApplications(filtered);
   };
 
   return (
-    <div style={{ padding: "30px", fontFamily: "Arial" }}>
+    <div className="dashboard">
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      {/* 🔹 TOPBAR */}
+      <div className="topbar">
         <div>
-          <h1>Candidate Dashboard</h1>
-          <p style={{ color: "gray", margin: 0 }}>{user?.email}</p>
+          <h2>Candidate Dashboard</h2>
+          <p className="emailText">{user?.email}</p>
         </div>
 
-        <button
-          onClick={() => {
-            logout();
-            navigate("/");
-          }}
-          style={{
-            padding: "8px 16px",
-            background: "black",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer"
-          }}
-        >
+        <button className="logoutBtn" onClick={() => { logout(); navigate("/"); }}>
           Logout
         </button>
       </div>
 
-      <h2>Available Internships</h2>
+      {/* 🔹 MAIN NAVIGATION CARDS */}
 
-      {internships.map((i) => (
-        <div key={i.id} style={card}>
+      <div className="navGrid">
 
-          <h3 style={{ textAlign: "center", color: "#111827" }}>
-            {i.companyName}
-          </h3>
-
-          <p><b>Role:</b>{i.title}</p>
-          <p><b>Location:</b> {i.workLocation}</p>
-          <p><b>CTC:</b> {i.ctc}</p>
-          <p><b>Description:</b> {i.description}</p>
-
-          {hasApplied(i.id)
-            ? <button disabled style={appliedBtn}>Applied</button>
-            : <button onClick={() => setSelectedInternship(i)} style={applyBtn}>Apply</button>}
+        <div className="navCard" onClick={() => navigate("/candidate/internships")}>
+          <h3>Apply New Internship</h3>
+          <p>Browse HR posted internships and apply</p>
         </div>
-      ))}
 
-      {selectedInternship && (
-        <div style={formBox}>
-          <h2>Apply for {selectedInternship.title}</h2>
-
-          <input placeholder="Full Name" value={candidateName}
-            onChange={(e) => setCandidateName(e.target.value)} style={input} />
-
-          <input placeholder="Phone" value={phone}
-            onChange={(e) => setPhone(e.target.value)} style={input} />
-
-          <input placeholder="Degree" value={degree}
-            onChange={(e) => setDegree(e.target.value)} style={input} />
-
-          <input placeholder="College" value={college}
-            onChange={(e) => setCollege(e.target.value)} style={input} />
-
-          <input placeholder="CGPA" value={cgpa}
-            onChange={(e) => setCgpa(e.target.value)} style={input} />
-
-          <input placeholder="Skills" value={skills}
-            onChange={(e) => setSkills(e.target.value)} style={input} />
-
-          <input type="file" accept="application/pdf"
-            onChange={(e) => setResume(e.target.files[0])} />
-
-          <button onClick={handleApply} style={submitBtn}>
-            Submit Application
-          </button>
+        <div className="navCard" onClick={() => navigate("/candidate/applications")}>
+          <h3>View Applied Internships</h3>
+          <p>Track all your applications</p>
         </div>
-      )}
 
-      <h2 style={{ marginTop: "40px" }}>My Applications</h2>
+        <div className="navCard progressNavCard">
+          <h3>My Progress</h3>
+          <p>Live recruitment status</p>
+        </div>
 
-      {applications.map((app) => {
+      </div>
 
-        const internship = internships.find(i => i.id === app.internshipId);
+      {/* 🔹 PROGRESS SECTION */}
 
-        return (
-          <div key={app.id} style={card}>
+      <h3 className="sectionTitle">Application Progress</h3>
 
-           
-            <h3 style={{ textAlign: "center", color: "#111827" }}>
-              {internship?.companyName}
-            </h3>
+      <div className="progressGrid">
 
-            <h3>{internship?.title}</h3>
+        {applications.map((app) => (
 
-            
+          <div key={app.id} className="progressCard">
 
-
-           
-
-            {app.status === "TEST_ACTIVE" && (
-              <>
-                <p>Test active till {formatDate(app.testDate)}</p>
-                <button
-                  onClick={() => navigate(`/candidate/test/${app.id}`)}
-                  style={testBtn}
-                >
-                  Take Test
-                </button>
-              </>
-            )}
+            <h4>{app.candidateName}</h4>
 
             {app.status === "TEST_PASSED" &&
-              <p style={{ color: "#111827" }}>Online Test-Passed</p>}
+              <span className="badge blue">Test Cleared</span>}
 
-            {app.status === "TEST_FAILED" &&
-              <p style={{ color: "red", fontWeight: "bold" }}>
-                 Online Test-Not Cleared
-              </p>}
+            {app.interviewStatus === "L1_SCHEDULED" &&
+              <span className="badge yellow">L1 Interview Scheduled</span>}
 
-            {app.interviewStatus === "L1_SCHEDULED" && (
-              <div style={interviewBox}>
-                L1 Interview Scheduled <br />
-                <b>Date:</b>{formatDate(app.l1Date)} <br />
-                <b>Time:</b>{formatTime(app.l1Time)} <br />
-                <b>Mode:</b>{app.l1Mode} <br />
-                <b>Interviewer</b>{getInterviewerName(app.l1InterviewerId)}
-              </div>
-            )}
+            {app.interviewStatus === "L2_SCHEDULED" &&
+              <span className="badge yellow">L2 Interview Scheduled</span>}
 
-            {app.l1Result === "PASSED" &&
-              <p style={{ color: "#111827" }}> L1 Interview-Cleared</p>}
-
-            {app.interviewStatus === "L1_FAILED" &&
-              <p style={{ color: "red", fontWeight: "bold" }}>
-                 L1 Interview-Not Cleared
-              </p>}
-
-            {app.interviewStatus === "L2_SCHEDULED" && (
-              <div style={interviewBox}>
-                L2 Interview Scheduled <br />
-                <b>Date:</b>{formatDate(app.l2Date)} <br />
-                <b>Time:</b>{formatTime(app.l2Time)} <br />
-                <b>Mode:</b>{app.l2Mode} <br />
-                <b>Interviewer :</b>{getInterviewerName(app.l2InterviewerId)}<br />
-              </div>
-            )}
-
-            {app.l2Result === "PASSED" &&
-              <p style={{ color: "#111827" }}>L2 Interview-Cleared</p>}
-
-            {app.interviewStatus === "L2_FAILED" &&
-              <p style={{ color: "red", fontWeight: "bold" }}>
-                 L2 Interview-Not Cleared
-              </p>}
-
-            {app.interviewStatus === "HR_SCHEDULED" && !app.hrResult && (
-              <div style={interviewBox}>
-                HR Interview Scheduled <br />
-                <b>Date:</b>{formatDate(app.hrDate)} <br />
-                <b>Time:</b>{formatTime(app.hrTime)} <br />
-                <b>Mode:</b>{app.hrMode}
-              </div>
-            )}
+            {app.interviewStatus === "HR_SCHEDULED" &&
+              <span className="badge yellow">HR Interview Scheduled</span>}
 
             {app.hrResult === "PASSED" &&
-              <p style={{ color: "#111827" }}>HR Round- Cleared</p>}
+              <span className="badge green">HR Cleared</span>}
 
-            {app.hrResult === "FAILED" &&
-              <p style={{ color: "red", fontWeight: "bold" }}>
-                HR Round-Not Cleared
-              </p>}
+            {app.offerLetterFile &&
+              <span className="badge purple">Offer Released</span>}
 
-             {app.offerStatus === "REJECTED" &&
-              <p style={{ color: "red", fontWeight: "bold" }}>
-                Offer-Declined
-              </p>
-            }
-
-            {app.offerLetterFile && app.offerStatus !== "REJECTED" && (
-              <div style={{marginTop:"10px"}}>
-                <a
-                  href={`http://localhost:8080/offers/${app.offerLetterFile}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Download Offer Letter
-                </a>
-
-                {app.offerStatus === "PENDING" && (
-                  <>
-                    <br /><br />
-                    <button onClick={() => updateOfferStatus(app.id, "ACCEPTED")}>Accept</button>
-                    <button onClick={() => updateOfferStatus(app.id, "REJECTED")}>Reject</button>
-                  </>
-                )}
-
-                {app.offerStatus === "ACCEPTED" && !app.signedOfferLetter && (
-                  <>
-                    <br /><br />
-                    <input
-                      type="file"
-                      onChange={(e) => handleSignedFileChange(app.id, e.target.files[0])}
-                    />
-                    <button onClick={() => uploadSignedOffer(app.id)}>
-                      Upload Signed Offer
-                    </button>
-                  </>
-                )}
-
-              {app.signedOfferLetter && (
-  <>
-
-    {employee && (
-      <div
-        style={{
-          marginTop: "15px",
-          padding: "15px",
-          border: "1px solid white",
-          borderRadius: "8px",
-          background: "white"
-        }}
-      >
-        <h3 style={{ color: "#16a34a" }}> Welcome to the Company</h3>
-
-        <p><b>Employee ID:</b> {employee.employeeId}</p>
-        <p><b>Date of Joining:</b> {employee.dateOfJoining}</p>
-        <p><b>Reporting Time:</b> {employee.reportingTime}</p>
-        <p><b>Location:</b> {employee.workLocation}</p>
-        <p><b>Manager:</b> {employee.managerName}</p>
-        <p><b>Manager Email:</b> {employee.managerEmail}</p>
-        <p><b>Manager Contact:</b> {employee.managerContact}</p>
-      </div>
-    )}
-
-    {!employee && (
-      <>
-        <p style={{ color: "black" }}>Offer Process-Completed</p>
-
-        {(onboardingStatus === null || onboardingStatus === "REJECTED") && (
-          <button
-            onClick={() => navigate("/onboarding",{
-              state:{applicationId:app.id}
-            })}
-            style={{
-              marginTop: "10px",
-              padding: "8px 14px",
-              background: "#111827",
-              color: "white",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer"
-            }}
-          >
-            Fill Onboarding Form
-          </button>
-        )}
-
-        {onboardingStatus === "PENDING" && (
-          <p style={{ color: "orange", marginTop: "10px" }}>
-            Onboarding submitted – waiting for HR verification
-          </p>
-        )}
-
-        {onboardingStatus === "VERIFIED" && (
-          <p style={{ color: "green", marginTop: "10px" }}>
-            Onboarding verified
-          </p>
-        )}
-
-        {onboardingStatus === "REJECTED" && (
-          <p style={{ color: "red", marginTop: "10px" }}>
-            Onboarding rejected
-          </p>
-        )}
-      </>
-    )}
-
-  </>
-)}
-
-
-
-              </div>
-            )}
+            {app.signedOfferLetter &&
+              <span className="badge cyan">Offer Accepted</span>}
 
           </div>
-        );
-      })}
+
+        ))}
+
+      </div>
 
     </div>
   );
 }
 
 export default CandidateDashboard;
-
-const card = {
-  border: "1px solid #e5e7eb",
-  padding: 20,
-  borderRadius: 10,
-  marginBottom: 20,
-  background: "#ffffff",
-  color: "#111827"
-};
-
-const applyBtn = {
-  padding: "6px 12px",
-  background: "#111827",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: 6,
-  cursor: "pointer"
-};
-
-const appliedBtn = {
-  padding: "6px 12px",
-  background: "#e5e7eb",
-  color: "#374151",
-  border: "none",
-  borderRadius: 6
-};
-
-const submitBtn = {
-  marginTop: 15,
-  padding: "10px 20px",
-  background: "#111827",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: 6,
-  cursor: "pointer"
-};
-
-const input = {
-  width: "100%",
-  marginBottom: 10,
-  padding: 10,
-  border: "1px solid #e5e7eb",
-  borderRadius: 6,
-  color: "#111827"
-};
-
-const formBox = {
-  marginTop: 30,
-  padding: 20,
-  background: "#ffffff",
-  borderRadius: 10,
-  border: "1px solid #e5e7eb"
-};
-
-const testBtn = {
-  padding: "8px 15px",
-  background: "#111827",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: 6,
-  marginTop: 10,
-  cursor: "pointer"
-};
-
-const interviewBox = {
-  marginTop: "10px",
-  padding: "12px",
-  background: "white",
-  borderRadius: "8px",
-  border: "1px solid #e5e7eb",
-  color: "#111827",
-  fontWeight: 500
-};

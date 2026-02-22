@@ -55,7 +55,6 @@ const Login = () => {
       <div style={card}>
 
         <h2 style={title}>Employee Onboarding Portal</h2>
-
         <p style={subtitle}>Login to continue</p>
 
         <div style={roleContainer}>
@@ -116,54 +115,68 @@ const page = {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  background: "#fff",
-  fontFamily: "sans-serif"
+  background: "linear-gradient(135deg, #0f172a, #1e293b)",
+  fontFamily: "Inter, sans-serif"
 };
 
 const card = {
-  padding: "25px",
-  width: "320px",
-  border: "1px solid #000"
+  width: "360px",
+  padding: "35px",
+  borderRadius: "18px",
+  background: "rgba(255,255,255,0.08)",
+  backdropFilter: "blur(18px)",
+  border: "1px solid rgba(255,255,255,0.15)",
+  boxShadow: "0 10px 35px rgba(0,0,0,0.4)",
+  textAlign: "center",
+  color: "white",
+  animation: "fadeIn 0.6s ease"
 };
 
 const title = {
-  marginBottom: "5px",
-  fontSize: "20px"
+  marginBottom: "5px"
 };
 
 const subtitle = {
-  marginBottom: "15px",
-  fontSize: "13px"
+  fontSize: "14px",
+  color: "#cbd5e1",
+  marginBottom: "20px"
 };
 
 const roleContainer = {
   display: "flex",
-  gap: "5px",
-  marginBottom: "15px"
+  gap: "8px",
+  marginBottom: "18px"
 };
 
 const roleBtn = (active) => ({
   flex: 1,
-  padding: "6px",
-  border: "1px solid #000",
-  background: active ? "#000" : "#fff",
-  color: active ? "#fff" : "#000",
-  cursor: "pointer"
+  padding: "8px",
+  borderRadius: "8px",
+  border: "1px solid #64748b",
+  background: active ? "#38bdf8" : "transparent",
+  color: active ? "#0f172a" : "#cbd5e1",
+  fontWeight: active ? "600" : "400",
+  cursor: "pointer",
+  transition: "0.2s"
 });
 
 const input = {
   width: "100%",
-  padding: "7px",
-  marginBottom: "10px",
-  border: "1px solid #000"
+  padding: "10px",
+  borderRadius: "8px",
+  border: "none",
+  marginBottom: "12px",
+  outline: "none"
 };
 
 const loginBtn = {
   width: "100%",
-  padding: "8px",
-  background: "#000",
-  color: "#fff",
+  padding: "11px",
+  background: "#38bdf8",
+  color: "#0f172a",
   border: "none",
-  cursor: "pointer"
+  borderRadius: "10px",
+  fontWeight: "600",
+  cursor: "pointer",
+  transition: "0.2s"
 };
-
